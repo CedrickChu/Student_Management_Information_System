@@ -1,0 +1,117 @@
+
+html{
+    scroll-behavior: smooth;
+}
+
+body {
+
+    padding: 0;
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+}
+body.light-mode{
+    --clr-light: #111827;
+    --clr-dark: #E5E7EB;
+    --clr-slate500: #1F2937;
+    --clr-slate700: #1F2937;
+    --clr-slate800: #1F2937;
+}
+body.light-mode-table{
+    background-color: white!important;
+}
+img,
+picture,
+canvas,
+svg{
+    display: block;
+    max-width: 100%;
+    user-select: none;
+}
+.card-title{
+    margin-right: 260px !important;
+} 
+
+
+ul {
+    list-style-type: none;
+    }
+
+
+strong {
+    color: var(--clr-blue)
+}
+.input-group-addon{
+    width: 40px!important;
+}
+
+
+.dataTables_filter label {
+    display: inline-block;
+    margin-top: -20px;
+}
+
+.dataTables_filter input[type="search"] {
+    display: inline-block; 
+    width: auto; 
+}
+
+a{
+    color: black!important;
+}
+a:hover {
+    display: inline-block;
+    background: hsla(206, 91%, 66%, 1);
+    background: linear-gradient(90deg, hsla(206, 91%, 66%, 1) 0%, hsla(190, 90%, 51%, 1) 100%);
+    background: -moz-linear-gradient(90deg, hsla(206, 91%, 66%, 1) 0%, hsla(190, 90%, 51%, 1) 100%);
+    background: -webkit-linear-gradient(90deg, hsla(206, 91%, 66%, 1) 0%, hsla(190, 90%, 51%, 1) 100%);
+    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#5AB2F7", endColorstr="#12CFF3", GradientType=1 );
+    color: white!important;
+}
+
+svg, i{
+    color: black!important;
+}
+
+.content, .main-panel, .wrapper{
+    background: hsla(298, 68%, 90%, 1);
+    background: linear-gradient(90deg, hsla(298, 68%, 90%, 1) 0%, hsla(30, 82%, 91%, 1) 100%);
+    background: -moz-linear-gradient(90deg, hsla(298, 68%, 90%, 1) 0%, hsla(30, 82%, 91%, 1) 100%);
+    background: -webkit-linear-gradient(90deg, hsla(298, 68%, 90%, 1) 0%, hsla(30, 82%, 91%, 1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#f6d5f7", endColorstr="#fbe9d7", GradientType=1);
+   
+}
+
+.btn-danger{
+    background-color: white!important;
+    color: black !important;
+}
+
+.card-body{
+    background-color: #8CC0DE!important;
+    box-shadow: 10px 10px 5px 0px #776751;
+}
+.card-header {
+    background-color: #549ac2!important;
+}
+
+#filter-form button{
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    
+}
+.dataTables_wrapper .dataTables_filter input{
+    background-color: white!important;
+}
+.fc th, .fc td {
+    background-color: white;
+    border: 2px solid black;
+}
+.fc-view-container {
+    border: 2px solid rgb(117, 33, 30);
+}
+.dashboardContainer{
+    width: 80%;
+    margin: auto;
+}
+

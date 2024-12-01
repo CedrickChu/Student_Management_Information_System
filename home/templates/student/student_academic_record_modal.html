@@ -1,0 +1,50 @@
+<div class="modal fade" id="academicRecordModal" tabindex="-1" role="dialog" aria-labelledby="academicRecordModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="academicRecordModalLabel">Academic Record</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="academicRecordForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="student">Select Student:</label>
+                        <select class="form-control mr-2 js-selectize-student3" id="student" name="student_id">
+                            {% for student_info in student_infos %}
+                                <option value="{{ student_info.student.id }}">{{ student_info.student.lrn}} - {{ student_info.student.first_name }} {{ student_info.student.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Show Academic Record</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+        var selectizeElement = $('.js-selectize-student3');
+        var selectizeInstance;
+
+        if (selectizeElement.length) {
+            selectizeInstance = selectizeElement.selectize({
+                create: false
+            })[0].selectize;
+        }
+        $('#academicRecordForm').submit(function(event) {
+            event.preventDefault(); 
+
+            var studentInfoId = $('#student').val();
+
+            window.location.href = '/student-academic/' + studentInfoId + '/';
+        });
+    });
+</script>

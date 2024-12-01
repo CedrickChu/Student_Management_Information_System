@@ -1,0 +1,163 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} AdminLTE 3 | Dashboard {% endblock title %}
+
+{% block extrastyle %}
+
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="{% static 'plugins/jqvmap/jqvmap.min.css' %}">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+  <!-- summernote -->
+  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
+ 
+{% endblock extrastyle %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+{% block content %}
+<div class="wrapper">
+    <div class="main-panel">
+        <div class="content">
+            <div class="container container-fluid mx-auto">
+                <h2>Edit Student</h2>
+                <form id='student-update-form' method="post" action="">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col" >
+                            <div class="form-group" style="width:350px;">
+                                <label for="id_lrn">LRN:</label>
+                                {{ form.lrn }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="id_first_name">First Name:</label>
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="id_middle_name">Middle Name:</label>
+                                {{ form.middle_name }}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="id_last_name">Last Name:</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group" style="width:350px;">
+                                <label for="id_birth_date">Birth Date:</label>
+                                {{ form.birth_date }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="id_birth_date">Place of Birth:</label>
+                                {{ form.place_of_birth }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="id_gender">Gender:</label>
+                                {{ form.gender }}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="id_address">Address:</label>
+                                {{ form.address }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="d-flex">
+                                <div class="form-group" style="width: 550px;">
+                                    <label for="id_parent_guardians">Parent/Guardians:</label>
+                                    {{ form.parent_guardians }}
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                    <button type="button" class="btn btn-danger" id="btn_submit" data-toggle="modal" data-target="#confirmationModal">Update</button>
+                    <a href="{% url 'student-list' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'maintenance/parent_update_modal.html' %}
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmationModalLabel">Confirm Submission</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to Update this student Information?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmSubmitButton">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Update parent/guardian modal content on click
+    $('#updateParentModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var parentId = button.data('id');
+        $.ajax({
+            url: '{% url "parent-update" 0 %}'.replace('0', parentId),
+            method: 'GET',
+            success: function(data) {
+                $('#updateParentForm').attr('action', '{% url "parent-update" 0 %}'.replace('0', parentId));
+                $('#id_first_name').val(data.first_name);
+                $('#id_middle_name').val(data.middle_name);
+                $('#id_last_name').val(data.last_name);
+                $('#id_address').val(data.address);
+                $('#id_contact_information').val(data.contact_information);
+            }
+        });
+    });
+
+    // Submit form on confirmation
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('confirmSubmitButton').addEventListener('click', function() {
+            document.getElementById('student-update-form').submit();
+        });
+    });
+</script>
+
+{% endblock %}

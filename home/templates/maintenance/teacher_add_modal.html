@@ -1,0 +1,111 @@
+<div class="modal fade" id="addTeacherModal" tabindex="-1" role="dialog" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTeacherModalLabel">Add New Teacher</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addTeacherForm" method="post" action="{% url 'teacher-add' %}">
+                {% csrf_token %}
+                {{ teacher_form.as_p }}
+                <div class="modal-body">
+                    <div id="form-errors" class="text-danger"></div>
+                    <h5>Teacher Information</h5>
+                    <hr style="height:2px; color:black; background-color: black;">
+                    <div class="container" style="width:90%;">
+                        <div>
+                            <div class="form-group">
+                                <label for="teacher_id">Teacher ID</label>
+                                <input class="form-control" type="text" name="teacher_id" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="first_name">First Name</label>
+                                    <input class="form-control" type="text" name="first_name" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="middle_name">Middle Name</label>
+                                    <input class="form-control" type="text" name="middle_name" >
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="last_name">Last Name</label>
+                                    <input class="form-control" type="text" name="last_name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="address">Address</label>
+                                    <textarea class="form-control" name="address" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="contact_information">Contact Information</label>
+                                    <textarea class="form-control" name="contact_information" placeholder="Contact Information" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label for="id_status">Teaching Status</label>
+                                <select class="form-control" name="status" id="id_status" required>
+                                    <option value="Active" {% if form.status.value == 'Active' %}selected{% endif %}>Active</option>
+                                    <option value="Inactive" {% if form.status.value == 'Inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitAddTeacher">Add Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#addTeacherForm').submit(function(event) {
+            event.preventDefault(); 
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = "{% url 'teacher-list' %}";
+                        alert('Teacher added successfully');
+                        $('#addTeacherModal').modal('hide'); 
+                    } else {
+                        console.error('Unexpected response:', response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    var errors = xhr.responseJSON.errors;
+
+                    $('#form-errors').html('');
+                    if (errors) {
+                        $.each(errors, function(field, errors) {
+                            $('#form-errors').append('<p>' + field + ': ' + errors.join(', ') + '</p>');
+                        });
+                    }
+                    $('#form-errors').show();
+                }
+            });
+        });
+    });
+</script>

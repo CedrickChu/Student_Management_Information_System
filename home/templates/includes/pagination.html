@@ -1,0 +1,29 @@
+{% if is_paginated %}
+    <nav aria-label="Student Info pagination" class="mb-4">
+        <ul class="pagination">
+            <!-- First and Previous page links -->
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+
+            <!-- Page numbers -->
+            {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num == page_obj.number %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Next and Last page links -->
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+            {% endif %}
+        </ul>
+        
+        <!-- Display "Page X of Y" -->
+        <p class="text-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+    </nav>
+{% endif %}

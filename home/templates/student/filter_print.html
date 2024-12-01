@@ -1,0 +1,38 @@
+<!-- Add School Year Selection Modal -->
+<div class="modal fade" id="selectSchoolYearModal" tabindex="-1" role="dialog" aria-labelledby="selectSchoolYearModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectSchoolYearModalLabel">Select School Year</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="GET" action="{% url 'student-print' %}">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="school-year">School Year</label>
+                        <select class="form-control" id="school-year" name="school_year" style="height:40px;">
+                            {% for school_year in school_years %}
+                                <option value="{{ school_year.id }}">{{ school_year.year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="grade-level">Grade Level</label>
+                        <select class="form-control" id="grade-level" name="grade_level" style="height:40px;">
+                            {% for grade_level in grade_levels %}
+                                <option value="{{ grade_level.id }}" {% if grade_level == grade_level_selected %} selected {% endif %}>{{ grade_level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Print</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

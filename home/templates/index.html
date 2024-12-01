@@ -1,0 +1,549 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} {% endblock title %}
+
+{% block extrastyle %}
+
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="{% static 'plugins/jqvmap/jqvmap.min.css' %}">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+  <!-- summernote -->
+  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
+
+{% endblock extrastyle %}
+
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+
+{% block content %}
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Dashboard</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <section class="content">
+        <form id="filter-form" method="GET" action="{% url 'home' %}">
+            <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
+                <select name="school_year" class="form-control" style="height:40px;">
+                    <option value="{{current_school_year.id }}">Current</option>
+                    {% for year in school_years %}
+                    <option value="{{ year.id }}" {% if request.GET.school_year == year.id|stringformat:'s' %} selected {% endif %}>{{ year.year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="float: right; margin-right: 10px;">
+                <button style="height: 40px;" type="button" class="btn btn-primary" onclick="filterStudents()">Filter</button>
+            </div>
+        </form>
+        <div class="container-fluid">            
+            <div class= 'row'>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-user-graduate"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Enrollees</span>
+                            <span class="info-box-number">{{ total_enrollees }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-success elevation-1"><i class="fas fa-chalkboard-teacher"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">Active Teachers</span>
+                            <span class="info-box-number">{{ active_teachers_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-purple elevation-1"><i class="fas fa-calendar"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Activities in the Last 30 Days:</span>
+                            <span class="info-box-number"> {{ admin_activity_last_30_days }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-teal elevation-1"><i class="fas fa-users"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">User</span>
+                            <span class="info-box-number">{{ user_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header border-0">
+                            <div class="d-flex justify-content-between">
+                                <canvas id="genderPieChart" style="width: 100%; height: 600px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header border-0">
+                            <canvas id="gradeBarChart" style="width: 100%; height: 600px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header border-0">
+                            <div class="d-flex justify-content-between">
+                                <canvas id="ageChart" style="width: 100%; height: 600px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header border-0">
+                            <button type="button" class="btn btn-info" id="addEventButton">
+                                <i class="glyphicon glyphicon-plus"></i> Add
+                            </button>
+                            <div class="d-flex justify-content-between">
+                                <div id='calendar' style="width: 100%; height: 567px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if request.user.is_superuser %}
+            <div class="card direct-chat direct-chat-warning" style="width: 50%; margin:auto;">
+                <div class="card-body">
+                    <div style='width:95%; margin:auto; padding: 10px;'>
+                        <form method="GET" action="{% url 'home' %}">
+                            <div class="form-group">
+                                <label for="log_count">Number of logs to display:</label>
+                                <select id="log_count" name="log_count" class="form-control" style="width: 200px; display: inline-block;">
+                                    <option value="5" {% if request.GET.log_count == '5' %}selected{% endif %}>5</option>
+                                    <option value="10" {% if request.GET.log_count == '10' %}selected{% endif %}>10</option>
+                                    <option value="20" {% if request.GET.log_count == '20' %}selected{% endif %}>20</option>
+                                    <option value="50" {% if request.GET.log_count == '50' %}selected{% endif %}>50</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Apply</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="direct-chat-messages" style="width: 100%; height: 567px;">
+                        {% for log in recent_admin_logs %}
+                            <div class="direct-chat-msg">
+                                <div class="direct-chat-infos clearfix bg-danger">
+                                    <span class="direct-chat-name float-left" style='margin-left:10px;'><strong>{{ log.user.username }} :  </strong> {{ log.get_action_flag_display }}</span>
+                                    <span class="direct-chat-timestamp float-right text-white" style='margin-right:10px;'>{{ log.action_time }}</span>
+                                </div>
+                                <div class="direct-chat-text bg-success">
+                                    Affected object: {{ log.object_repr }}
+                                    Action: {{ log.change_message }}
+                                </div>
+                                <br>
+                            </div>
+                        {% empty %}
+                            <p>No logs to display.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+  {% endblock content %}
+
+
+  {% block extra_scripts %}
+    <script>
+        function filterStudents() {
+            document.getElementById("filter-form").submit();
+        }
+        const pieChartData = JSON.parse('{{ pie_chart_data_json | safe }}');
+        const pieCtx = document.getElementById('genderPieChart').getContext('2d');
+
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: pieChartData.labels,
+                datasets: [{
+                    data: pieChartData.data,
+                    backgroundColor: pieChartData.backgroundColor
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Gender Distribution'
+                    }
+                }
+            }
+        });
+        const barChartData  = JSON.parse('{{ bar_chart_data_json | safe }}');
+        const barCtx = document.getElementById('gradeBarChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: barChartData.labels,
+                datasets: [{
+                    label: 'Number of Students',
+                    data: barChartData.data,
+                    backgroundColor: barChartData.backgroundColor.slice(0, barChartData.labels.length),
+                    borderWidth: 4
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Grade Level Distribution'
+                    }
+                }
+            }
+        });
+        const ageChartData = JSON.parse('{{ age_chart_data_json | safe }}');
+        const ageCtx = document.getElementById('ageChart').getContext('2d');
+
+        new Chart(ageCtx, {
+            type: 'bar',  // You can change this to 'bar' for a histogram-like display
+            data: {
+                labels: ageChartData.labels,
+                datasets: [{
+                    label: 'Number of Students',
+                    data: ageChartData.data,
+                    backgroundColor: ageChartData.backgroundColor
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Age Distribution of Students'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Age Bracket'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Number of Students'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        $(document).ready(function () {
+            var calendar = $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'today',
+                },
+                events: '/all_events/',
+                selectable: false,
+                selectHelper: true,
+                editable: true,
+                eventLimit: true,
+                aspectRatio: 1.7,
+                
+                select: function (start, end, allDay) {
+                    showEventModal(start, end);
+                },
+                eventDrop: function (event) {
+                    updateEvent(event);
+                },
+                eventClick: function (event) {
+                    showEventUpdateModal(event);
+                },
+                eventRender: function (event, element) {
+                    if (event.color) {
+                        element.css('background-color', event.color);
+                        element.css('border-color', event.color);
+                    }
+                    
+                    element.find('.fc-time').remove();
+                    element.find('.fc-title').prepend('<i class="fa fa-calendar"></i> ');
+                }
+            });
+    
+            $('#addEventButton').on('click', function() {
+                const start = moment().startOf('day');  
+                const end = moment().add(1, 'hours');   
+                showEventModal(start, end);
+            });
+    
+            function getRandomColor() {
+                const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+                return `#${randomColor.padStart(6, '0')}`;
+            }
+    
+            function showEventModal(start, end) {
+                if ($('#eventModal').length) {
+                    $('#eventModal').remove();
+                }
+                const initialColor = getRandomColor();
+                var modalHtml = `
+                    <div id="eventModal" style="display:block; position:fixed; z-index:999; width: 500px; left:50%; top:50%; transform:translate(-50%, -50%); padding:5px; background:white; border:1px solid #ccc;">
+                        <div style='padding: 20px;'>
+                            <h2 class='text-center'>Create Event</h2>
+                            <div class="form-group">
+                                <label for="eventTitle">Event Name:</label>
+                                <input type="text" class="form-control" id="eventTitle" /><br/>
+                            </div>
+                            <div class="form-group">
+                                <label for="eventNote">Note:</label>
+                                <input type="text" class="form-control" id="eventNote"></textarea>
+                            </div>
+                            <label for="eventColor">Date Range:</label>
+                            <div class="input-group">
+                                
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" style='width:40px;'>
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                                
+                                <input type="text" class="form-control" id="eventDateRange" />
+                            </div>
+                            <input type="hidden" id="eventStart" value="${start.format('YYYY-MM-DD HH:mm:ss')}" />
+                            <input type="hidden" id="eventEnd" value="${end.format('YYYY-MM-DD HH:mm:ss')}" />
+                            <div class="form-group">
+                                <label for="eventColor">Event Color:</label>
+                                <input type="color" id="eventColor" class="form-control" value="${initialColor}"/>
+                            </div>
+                            <button id="saveEvent" class="btn-info">Add Event</button>
+                            <button id="closeModal">Cancel</button>
+                        </div>
+                    </div>
+                `;
+                $('body').append(modalHtml);
+    
+                // Initialize Flatpickr
+                flatpickr("#eventDateRange", {
+                    mode: "range",
+                    dateFormat: "Y-m-d H:i",
+                    onChange: function(selectedDates) {
+                        if (selectedDates.length === 2) {
+                            $('#eventStart').val(moment(selectedDates[0]).format("YYYY-MM-DD HH:mm:ss"));
+                            $('#eventEnd').val(moment(selectedDates[1]).format("YYYY-MM-DD HH:mm:ss"));
+                        }
+                    }
+                });
+    
+                // Save event on button click
+                $('#saveEvent').on('click', function () {
+                    var name = $('#eventTitle').val();
+                    var start = $('#eventStart').val();
+                    var end = $('#eventEnd').val();
+                    var color = $('#eventColor').val();
+                    var note = $('#eventNote').val();
+    
+                    if (name && start && end) {
+                        $.ajax({
+                            type: "GET",
+                            url: '/add_event/',
+                            data: { 'name': name, 'note': note, 'start': start, 'end': end, 'color': color },
+                            dataType: "json",
+                            success: function (data) {
+                                calendar.fullCalendar('refetchEvents');
+                                alert("Added Successfully");
+                                $('#eventModal').remove();
+                            },
+                            error: function (data) {
+                                alert('There is a problem!!!');
+                            }
+                        });
+                    } else {
+                        alert("Please fill all fields.");
+                    }
+                });
+    
+                $('#closeModal').on('click', function () {
+                    $('#eventModal').remove();
+                });
+            }
+    
+            function showEventUpdateModal(event) {
+                if ($('#eventUpdateModal').length) {
+                    $('#eventUpdateModal').remove();
+                }
+            
+                var modalHtml = `
+                    <div id="eventUpdateModal" style="display:block; position:fixed; z-index:999; left:50%; top:50%; transform:translate(-50%, -50%); padding:10px; width: 400px; background:white; border:1px solid #ccc;">
+                        <h2 class='text-center'>Update Event</h2>
+                        <div class="form-group">
+                            <label for="updateEventTitle">Event Name:</label>
+                            <input type="text" class="form-control" id="updateEventTitle" value="${event.title}" />
+                        </div>
+                        <div class="form-group">
+                            <label for="updateEventNote">Note:</label>
+                            <input type="text" class="form-control" id="updateEventNote" value="${event.note || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label for="updateEventDateRange">Date Range:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" style="width:40px;">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                                <input type="text" class="form-control" id="updateEventDateRange" />
+                            </div>
+                            <input type="hidden" id="updateEventStart" value="${moment(event.start).format('YYYY-MM-DD HH:mm:ss')}" />
+                            <input type="hidden" id="updateEventEnd" value="${moment(event.end).format('YYYY-MM-DD HH:mm:ss')}" />
+                        </div>
+                        <div class="form-group">
+                            <label for="updateEventColor">Event Color:</label>
+                            <input type="color" id="updateEventColor" class="form-control" value="${event.color}" />
+                        </div>
+                        <button id="saveUpdatedEvent"  class='btn btn-info'>Update</button>
+                        <button id="deleteEvent" class='btn btn-danger'>Delete</button>
+                        <button id="closeUpdateModal">Cancel</button>
+                    </div>
+                `;
+                $('body').append(modalHtml);
+                $('#deleteEvent').on('click', function () {
+                    if (confirm("Are you sure you want to remove it?")) {
+                        var id = event.id;
+                        $.ajax({
+                            type: "GET",
+                            url: '/remove/',
+                            data: { 'id': id },
+                            dataType: "json",
+                            success: function (data) {
+                                calendar.fullCalendar('refetchEvents');
+                                alert('Event Removed');
+                                $('#eventUpdateModal').remove();
+                            },
+                            error: function (data) {
+                                alert('There is a problem!!!');
+                            }
+                        });
+                    }
+                });
+    
+              
+            
+                // Initialize Flatpickr for date range input
+                flatpickr("#updateEventDateRange", {
+                    mode: "range",
+                    enableTime: true,
+                    dateFormat: "Y-m-d H:i",
+                    defaultDate: [event.start, event.end],
+                    onChange: function (selectedDates) {
+                        if (selectedDates.length === 2) {
+                            $('#updateEventStart').val(moment(selectedDates[0]).format("YYYY-MM-DD HH:mm:ss"));
+                            $('#updateEventEnd').val(moment(selectedDates[1]).format("YYYY-MM-DD HH:mm:ss"));
+                        }
+                    }
+                });
+            
+                // Save updated event
+                $('#saveUpdatedEvent').on('click', function () {
+                    var updatedTitle = $('#updateEventTitle').val();
+                    var updatedNote = $('#updateEventNote').val();
+                    var updatedStart = $('#updateEventStart').val();
+                    var updatedEnd = $('#updateEventEnd').val();
+                    var updatedColor = $('#updateEventColor').val();
+            
+                    if (updatedTitle && updatedStart && updatedEnd) {
+                        $.ajax({
+                            type: "GET",
+                            url: '/update/',
+                            data: {
+                                id: event.id,
+                                name: updatedTitle,
+                                note: updatedNote,
+                                start: updatedStart,
+                                end: updatedEnd,
+                                color: updatedColor,
+                            },
+                            dataType: "json",
+                            success: function (data) {
+                                calendar.fullCalendar('refetchEvents');
+                                alert("Event Updated Successfully");
+                                $('#eventUpdateModal').remove();
+                            },
+                            error: function (data) {
+                                alert("Error updating event!");
+                            }
+                        });
+                    } else {
+                        alert("Please fill all fields.");
+                    }
+                });
+            
+                // Close modal
+                $('#closeUpdateModal').on('click', function () {
+                    $('#eventUpdateModal').remove();
+                });
+            }
+        });
+    </script>
+  
+    <!-- overlayScrollbars -->
+    <script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
+    <!-- PAGE PLUGINS -->
+    <!-- jQuery Mapael -->
+    <script src="{% static 'plugins/jquery-mousewheel/jquery.mousewheel.js' %}"></script>
+    <script src="{% static 'plugins/raphael/raphael.min.js' %}"></script>
+    <script src="{% static 'plugins/jquery-mapael/jquery.mapael.min.js' %}"></script>
+    <script src="{% static 'plugins/jquery-mapael/maps/usa_states.min.js' %}"></script>
+    <!-- ChartJS -->
+    <script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
+    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+    <script src="{% static 'dist/js/pages/dashboard2.js' %}"></script>
+
+  {% endblock

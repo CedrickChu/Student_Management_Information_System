@@ -1,0 +1,160 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Subject List{% endblock title %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/jqvmap/jqvmap.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
+
+{% endblock extrastyle %}
+
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+
+{% block content %}
+<div class="content-wrapper">
+    <br><br>
+    <div class="main-panel">
+        <div class="content">
+            <div class="row">
+                <div class="col-md-8" id="s_page">
+                    <div class="panel panel-default" style='width:95%; margin:auto;'>
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Subject List</h3>
+                        </div>
+                        <div class="container">
+                            <form id="filter-form" method="GET" action="{% url 'subject-list' %}">
+                                <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
+                                    <select name="grade_level" class="form-control" style="height:40px; margin-top:20px;">
+                                        {% for level in grade_levels %}
+                                        <option value="{{ level.id }}" {% if selected_grade_level_id == level.id|stringformat:'s' %} selected {% endif %}>{{ level.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div style="float: right; margin-right: 10px; padding:20px;">
+                                    <button style='height:40px;' type="button" class="btn btn-primary" onclick="filterSubjects()">Filter</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="panel-body" style='background-color:white; padding: 20px;'>
+                            <table id="subjects" class="table table-hover table-bordered">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th style="width:20%">Subject</th>
+                                        <th style="width:10%">Grade Level</th>
+                                        {% if request.user.is_superuser %}
+                                        <th style="width:10%">Action</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject in subjects %}
+                                    <tr class="text-center">
+                                        <td><input id="subject{{ subject.id }}" type="text" style="border:0px" value="{{ subject.name }}" readonly></td>
+                                        <td><input id="grade-level{{ subject.id }}" type="text" style="border:0px" value="{{ subject.grade_level.name }}" readonly></td>
+                                        {% if request.user.is_superuser %}
+                                        <td class="text-center">
+                                            <a href="#" onclick="editSubject('{{ subject.id }}', '{{ subject.grade_level.id }}')" class="btn btn-info"><i class="fa fa-pen" aria-hidden="true"></i> Edit</a>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.is_superuser %}
+                <div class="col-md-4">
+                    <div class="container frm-new">
+                        <div class="row main">
+                            <div class="main-login main-center"  style='background-color:white; padding: 30px; width:80%;'>
+                                <h3 id="head">{{ form_title }}</h3>
+                                <form id="subject-form" method="post" action="{% url 'subject-add' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="id" name="id">
+                                    <input type="hidden" id="filter_search" name="search" value="{{ request.GET.search }}">
+                                    <input type="hidden" id="filter_grade_level" name="grade_level" value="{{ request.GET.grade_level }}">
+                                    <div class="form-group">
+                                        <label for="name" class="cols-sm-2 control-label">Subject Name</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text" id="basic-addon1">
+                                                    <i><svg xmlns="http://www.w3.org/2000/svg" style='height:20px;' fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                                    </svg>
+                                                    </i>                                                   
+                                                    </span>
+                                                </div>
+                                                <input type="text" class="form-control" id="name" name="name" style="width:200px" value="{{ subject_form.name.value }}" required>
+                                            </div>
+                                            <p>
+                                                {% if subject_form.name.errors %}
+                                                <div class='error' id='alert'><h5>{{ subject_form.name.errors }}</h5></div>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="grade_level">Grade Level</label>
+                                        
+                                        <select id="grade_level" name="grade_level" class="form-control" style="height:40px;">
+                                            <option value="" disabled selected>Select Grade Level</option>
+                                            {% for level in grade_levels %}
+                                            <option value="{{ level.id }}" {% if selected_grade_level_id == level.id|stringformat:'s' %} selected {% endif %}>{{ level.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div id="status"></div>
+                                    <div class="form-group">
+                                        <input type="button" class="btn btn-info" id="reset" name="reset" value="Cancel" onclick="resetForm()">
+                                        <button type="submit" class="btn btn-info" id="btn_submit" onclick="updateFormAction()">{{ submit_label }}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterSubjects() {
+        document.getElementById("filter-form").submit();
+    }
+
+    function editSubject(subjectId, gradeLevelId) {
+        var subjectName = document.getElementById('subject' + subjectId).value;
+        document.getElementById('subject-form').action = "{% url 'subject-update' pk=0 %}".replace('0', subjectId);
+        document.getElementById('id').value = subjectId;
+        document.getElementById('name').value = subjectName;
+        document.getElementById('grade_level').value = gradeLevelId;
+        document.getElementById('head').innerText = 'Edit Subject';
+        document.getElementById('btn_submit').innerText = 'Update Subject';
+    }
+
+    function resetForm() {
+        document.getElementById('subject-form').action = "{% url 'subject-add' %}";
+        document.getElementById('id').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('grade_level').selectedIndex = 0; // Select the first option
+        document.getElementById('head').innerText = '{{ form_title }}';
+        document.getElementById('btn_submit').innerText = '{{ submit_label }}';
+    }
+
+    function updateFormAction() {
+        var form = document.getElementById('subject-form');
+        var searchParam = document.getElementById('filter_search').value;
+        var gradeLevelParam = document.getElementById('filter_grade_level').value;
+        form.action += '?search=' + encodeURIComponent(searchParam) + '&grade_level=' + encodeURIComponent(gradeLevelParam);
+    }
+</script>
+{% endblock %}

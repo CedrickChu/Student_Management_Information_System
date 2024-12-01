@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} AdminLTE 3 | Dashboard {% endblock title %}
+
+{% block extrastyle %}
+
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="{% static 'plugins/jqvmap/jqvmap.min.css' %}">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+  <!-- summernote -->
+  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
+ 
+{% endblock extrastyle %}
+{% block bodyclass %} hold-transition sidebar-mini layout-fixed {% endblock bodyclass %}
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="main-panel">
+        <div class="content">
+            <br>
+            <div class="container container-fluid mx-auto">
+                <h3 class="text-center">Add Old Student</h3>
+                <hr style="height:2px; color:black; background-color: gray;">
+                <form id="addAllStudentForm" method="post" action="{% url 'student-old' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div id="form-errors" class="text-danger"></div>
+                        <h5>Student Information</h5>
+                        <hr style="height:2px; color:black; background-color: gray;">
+                        {{ student_info_form.as_p }}
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="student">Select Old Student: </label>
+                                    <div class="d-flex">
+                                        <select style='height:40px; width:40%;' class="form-control mr-2 js-selectize-student" name="student" required>
+                                            <option value="" disabled selected style="display:none;"> Enter Student </option>
+                                            {% for student in students %}
+                                                <option value="{{ student.id }}">{{ student.lrn }} - {{ student.first_name }} {{ student.middle_name }} {{ student.last_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="grade_level">Grade Level:</label>
+                            <select style='height:40px;' class="form-control" name="grade_level" required>
+                                {% for level in grade_levels %}
+                                    <option value="{{ level.id }}">{{ level.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="school_year">School Year:</label>
+                            <select style='height:40px;' class="form-control" name="school_year" required>
+                                {% for year in school_years %}
+                                    <option value="{{ year.id }}" {% if year.status %}selected{% endif %}>{{ year.year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="section">Section:</label>
+                            <select style='height:40px;' class="form-control" name="section" required>
+                                {% for section in sections %}
+                                    <option value="{{ section.id }}">{{ section.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <h5>Payment Status</h5>
+                        <hr style="height:2px; color:black; background-color: gray;">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>First Quarter:</label>
+                                    <select style='height:40px;' class="form-control" name="paid_first_quarter" required>
+                                        <option value="0">Not Paid</option>
+                                        <option value="1">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Second Quarter:</label>
+                                    <select style='height:40px;' class="form-control" name="paid_second_quarter" required>
+                                        <option value="0">Not Paid</option>
+                                        <option value="1">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Third Quarter:</label>
+                                    <select style='height:40px;' class="form-control" name="paid_third_quarter" required>
+                                        <option value="0">Not Paid</option>
+                                        <option value="1">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Fourth Quarter:</label>
+                                    <select style='height:40px;' class="form-control" name="paid_fourth_quarter" required>
+                                        <option value="0">Not Paid</option>
+                                        <option value="1">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"><a href="{% url 'allStudent-list'%}" style='text-decoration: none; color:white;'>Cancel</a></button>
+                        <button type="submit" class="btn btn-primary" id="submitAddStudent">Add Student</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'student/student_add_modal.html' %}
+
+<script>
+    $(document).ready(function() {
+        $('#addAllStudentForm').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data: formData,
+                success: function(response) {
+                    // Adjust this check based on what your server returns
+                    if (response.success) {
+                        window.location.href = "{% url 'allStudent-list' %}";
+                        alert('Student added successfully');
+                        $('#addStudentModal').modal('hide');
+                    } else {
+                        console.error('Unexpected response:', response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    var errors = xhr.responseJSON.errors;
+                    $('#form-errors').html('');
+                    if (errors) {
+                        $.each(errors, function(field, errorMessages) {
+                            $('#form-errors').append('<p>' + field + ': ' + errorMessages.join(', ') + '</p>');
+                        });
+                    }
+                    $('#form-errors').show();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

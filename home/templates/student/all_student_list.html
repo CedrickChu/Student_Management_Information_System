@@ -1,0 +1,144 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %} Student Year Information {% endblock title %}
+{% block extrastyle %}
+<!-- DataTables -->
+<link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+{% endblock extrastyle %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+{% block content %}
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Student Year Info</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+                <button style="float:left; margin-right:40px;" type="button" class="btn btn-info" data-toggle="modal" data-target="#syiModal">
+                    <i class="glyphicon glyphicon-plus"></i> New Entry
+                </button>
+                <button style="float:left" type="button" class="btn btn-info" data-toggle="modal" data-target="#academicRecordModal">
+                    <i class="glyphicon glyphicon-plus"></i> View Academic Record
+                </button>
+                <span id='returncode'></span>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="card">
+              <div class="card-header">
+                <form id="filter-form" method="GET" action="{% url 'allStudent-list' %}">
+                    <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
+                        <select name="grade_level" class="form-control" style="height:40px;">
+                            <option value="">Select Grade Level (Default All)</option>
+                            {% for level in grade_levels %}
+                            <option value="{{ level.id }}" {% if request.GET.grade_level == level.id|stringformat:'s' %} selected {% endif %}>{{ level.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
+                        <select name="school_year" class="form-control" style="height:40px;">
+                            <option value="">Select School Year (Default All)</option>
+                            {% for year in school_years %}
+                            <option value="{{ year.id }}" {% if request.GET.school_year == year.id|stringformat:'s' %} selected {% endif %}>{{ year.year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="float: right; margin-right: 10px;">
+                        <button style="height: 40px;" type="button" class="btn btn-primary" onclick="filterStudents()">Filter</button>
+                    </div>
+                </form>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <table id="example1" class="table table-bordered table-striped">
+                    <thead class="text-primary text-center">
+                        <tr>
+                            <th rowspan="2">LRN No.</th>
+                            <th rowspan="2">Name</th>
+                            <th rowspan="2">Grade Level</th>
+                            <th rowspan="2">Section</th>
+                            <th rowspan="2">School Year</th>
+                            <th colspan="4">Payment</th>
+                        </tr>
+                        <tr>
+                            <th>First Quarter</th>
+                            <th>Second Quarter</th>
+                            <th>Third Quarter</th>
+                            <th>Fourth Quarter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student_info in student_infos %}
+                        <tr>
+                            <td>{{ student_info.student.lrn }}</td>
+                            <td>{{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }}</td>
+                            <td>{{ student_info.grade_level }}</td>
+                            <td>{{ student_info.section }}</td>
+                            <td>{{ student_info.school_year.year }}</td>
+                            <td>{% if student_info.paid_first_quarter %} Paid {% else %} Not Paid {% endif %}</td>
+                            <td>{% if student_info.paid_second_quarter %} Paid {% else %} Not Paid {% endif %}</td>
+                            <td>{% if student_info.paid_third_quarter %} Paid {% else %} Not Paid {% endif %}</td>
+                            <td>{% if student_info.paid_fourth_quarter %} Paid {% else %} Not Paid {% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div>
+                    {% include 'includes/pagination.html' %}
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            {% include 'student/add_syi_modal.html' %}
+            {% include 'student/student_academic_record_modal.html' %}
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+{% endblock content %}
+{% block extra_scripts %}
+<!-- DataTables  & Plugins -->
+<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+<!-- Page specific script -->
+<script>
+    $(function () {
+        $("#example1").DataTable({
+            responsive: true,
+            lengthChange: false,
+            autoWidth: false,
+            paging: false,
+            info: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    });
+</script>
+{% endblock extra_scripts %}

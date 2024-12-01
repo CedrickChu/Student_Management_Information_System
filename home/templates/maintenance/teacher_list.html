@@ -1,0 +1,150 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %} Teachers List {% endblock title %}
+{% block extrastyle %}
+<!-- DataTables -->
+<link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+{% endblock extrastyle %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        {% if request.user.is_superuser %}
+                        <button style="float:left" type="button" class="btn btn-info" data-toggle="modal" data-target="#addTeacherModal">
+                            <i class="glyphicon glyphicon-plus"></i> New Entry
+                        </button>
+                        {% endif %}
+                    </ol>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h1 class="text-center">Teacher List</h1>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="example1" class="table table-bordered table-striped">
+                                    <thead class="text-primary text-center">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Address</th>
+                                            <th>Contact Information</th>
+                                            <th>Status</th>
+                                            {% if request.user.is_superuser %}
+                                            <th>Action</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for teacher in teachers %}
+                                        <tr>
+                                            <td>{{teacher.teacher_id}}</td>
+                                            <td>{{ teacher.first_name }} {{ teacher.middle_name }} {{ teacher.last_name }}</td>
+                                            <td>{{ teacher.address }}</td>
+                                            <td>{{ teacher.contact_information }}</td>
+                                            <td>{{ teacher.status}}</td>
+                                            {% if request.user.is_superuser %}
+                                            <td class="text-center">
+                                                <button class="btn btn-danger edit_teacher" type="button" data-id="{{ teacher.id }}" data-toggle="modal" data-target="#updateTeacherModal">
+                                                    <i class="fa fa-pen"></i> Update
+                                                </button>
+                                                <button class="btn btn-warning delete_teacher" type="button" data-id="{{ teacher.id }}">
+                                                    <i class="fa fa-trash"></i> Delete
+                                                </button>
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <div>
+                                    {% include 'includes/pagination.html' %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'maintenance/teacher_add_modal.html' %}
+{% include 'maintenance/teacher_update_modal.html' %}
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- DataTables  & Plugins -->
+<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+
+<script>
+    $(function () {
+        $("#example1").DataTable({
+            responsive: true,
+            lengthChange: false,
+            autoWidth: false,
+            paging: false,
+            info: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    });
+
+    $('.edit_teacher').click(function() {
+        const teacherId = $(this).data('id');
+        $.ajax({
+            url: `{% url 'teacher-update' 0 %}`.replace('0', teacherId),
+            method: 'GET',
+            success: function(data) {
+                $('#updateTeacherForm').attr('action', `{% url 'teacher-update' 0 %}`.replace('0', teacherId));
+                $('#updateTeacherForm input[name="first_name"]').val(data.first_name);
+                $('#updateTeacherForm input[name="middle_name"]').val(data.middle_name);
+                $('#updateTeacherForm input[name="last_name"]').val(data.last_name);
+                $('#updateTeacherForm textarea[name="address"]').val(data.address);
+                $('#updateTeacherForm input[name="contact_information"]').val(data.contact_information);
+            }
+        });
+    });
+
+    $('.delete_teacher').click(function() {
+        const teacherId = $(this).data('id');
+        if (confirm("Are you sure to delete this Teacher?")) {
+            $.ajax({
+                url: "{% url 'teacher-delete' %}",
+                method: 'POST',
+                data: { 'id': teacherId, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                success: function(resp) {
+                    if (resp == 1) {
+                        alert("Data successfully deleted");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert("Failed to delete data");
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock extra_scripts %}

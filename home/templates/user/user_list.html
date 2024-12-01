@@ -1,0 +1,225 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}AdminLTE 3 | Dashboard{% endblock title %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/jqvmap/jqvmap.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
+
+{% endblock extrastyle %}
+
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed{% endblock bodyclass %}
+
+{% block content %}
+<div class="content-wrapper">
+    <br><br><br>
+    <div class="main-panel">
+        <div class="content">
+            <div class="row">
+                <div class="col-md-8" id="s_page">
+                    <div class="panel panel-default" style='width:95%; margin:auto;'>
+                        <br>
+                        <div class="panel-heading">
+                            <h3 class="panel-title">User List</h3>
+                        </div>
+                        <div class="panel-body" style='background-color:white; padding: 20px;'>
+                            <table id="user" class="table table-hover table-bordered">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th>Username</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Type</th>
+                                        <th style="width:10%">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <input id="user-username-{{ user.id }}" type="text" style="border:0px" value="{{ user.username }}" readonly>
+                                        </td>
+                                        <td>
+                                            <input id="user-first_name-{{ user.id }}" type="text" style="border:0px" value="{{ user.first_name }}" readonly>
+
+                                        </td>
+                                        <td>
+                                            <input id="user-last_name-{{ user.id }}" type="text" style="border:0px" value="{{ user.last_name }}" readonly>
+                                        </td>
+                                        <td>
+                                            <input id="user-is_superuser-{{ user.id }}" type="text" style="border:0px" value="{% if user.is_superuser %}ADMINISTRATOR{% else %}STAFF{% endif %}" readonly>
+                                        </td>
+                                        <td>
+                                            <a href="#" onclick="editUser('{{ user.id }}')" class="btn btn-info">
+                                                <i class="fa fa-pen" aria-hidden="true"></i> Edit
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="container frm-new">
+                        <div class="row main">
+                            <div class="main-login main-center"  style='background-color:white; padding: 30px; width:80%;'>
+                                <h3 id="head">{{ form_title }}</h3>
+                                <form id="user-form" method="post" action="{% if form_title == 'Edit User' %}{% url 'user-update' user_form.instance.pk %}{% else %}{% url 'user-add' %}{% endif %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="id" name="id">
+                                    
+                                    <div class="form-group">
+                                        <label for="username" class="cols-sm-2 control-label">Username</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                                <input type="text" class="form-control" id="username" name="username" style="width:200px" value="{{ user_form.username.value }}" required>
+                                            </div>
+                                            {% if user_form.username.errors %}
+                                                <div class="error" id="alert"><h5>{{ user_form.username.errors }}</h5></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password1" class="cols-sm-2 control-label">Password</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-lock" aria-hidden="true"></i></span>
+                                                <input type="password" class="form-control" id="password1" name="password1" style="width:200px">
+                                            </div>
+                                            {% if user_form.password1.errors %}
+                                                <div class="error" id="alert"><h5>{{ user_form.password1.errors }}</h5></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password2" class="cols-sm-2 control-label">Confirm Password</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-lock" aria-hidden="true"></i></span>
+                                                <input type="password" class="form-control" id="password2" name="password2" style="width:200px">
+                                            </div>
+                                            {% if user_form.password2.errors %}
+                                                <div class="error" id="alert"><h5>{{ user_form.password2.errors }}</h5></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="first_name" class="cols-sm-2 control-label">First Name</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                                <input type="text" class="form-control" id="first_name" name="first_name" style="width:200px" value="{{ user_form.first_name.value }}" required>
+                                            </div>
+                                            {% if user_form.first_name.errors %}
+                                                <div class="error" id="alert"><h5>{{ user_form.first_name.errors }}</h5></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="last_name" class="cols-sm-2 control-label">Last Name</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                                <input type="text" class="form-control" id="last_name" name="last_name" style="width:200px" value="{{ user_form.last_name.value }}">
+                                            </div>
+                                            {% if user_form.last_name.errors %}
+                                                <div class="error" id="alert"><h5>{{ user_form.last_name.errors }}</h5></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="is_superuser" class="cols-sm-2 control-label">Type</label>
+                                        <div class="cols-sm-4">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"></span>
+                                                <select class="form-control" id="is_superuser" name="is_superuser" style="width:200px; height: 40px;" required>
+                                                    <option value="True" {% if user_form.is_superuser.value == 'True' %}selected{% endif %}>ADMINISTRATOR</option>
+                                                    <option value="False" {% if user_form.is_superuser.value == 'False' %}selected{% endif %}>STAFF</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="button" class="btn btn-info" id="reset" name="reset" value="Cancel" onclick="resetForm()">
+                                        <button type="button" class="btn btn-info" id="btn_submit" data-toggle="modal" data-target="#confirmationModal">{{ submit_label }}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmationModalLabel">Confirm Submission</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to submit this form?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmSubmitButton">Confirm</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+    function editUser(userId) {
+        var username = document.getElementById('user-username-' + userId).value;
+        var first_name = document.getElementById('user-first_name-' + userId).value;
+        var last_name = document.getElementById('user-last_name-' + userId).value;
+        var is_admin = document.getElementById('user-is_superuser-' + userId).value;
+
+        document.getElementById('id').value = userId;
+        document.getElementById('username').value = username;
+        document.getElementById('first_name').value = first_name;
+        document.getElementById('last_name').value = last_name;
+        document.getElementById('is_superuser').value = is_admin === 'ADMINISTRATOR' ? 'True' : 'False';
+        document.getElementById('head').innerHTML = "Edit User";
+        document.getElementById('user-form').action = "{% url 'user-update' 0 %}".replace('0', userId);
+        document.getElementById('password1').removeAttribute('required');
+        document.getElementById('password2').removeAttribute('required');
+        document.getElementById('btn_submit').innerHTML = "Update";
+    }
+
+    function resetForm() {
+        document.getElementById('id').value = "";
+        document.getElementById('username').value = "";
+        document.getElementById('password1').value = "";
+        document.getElementById('password2').value = "";
+        document.getElementById('first_name').value = "";
+        document.getElementById('last_name').value = "";
+        document.getElementById('is_superuser').value = "False";
+        document.getElementById('head').innerHTML = "New User";
+        document.getElementById('user-form').action = "{% url 'user-add' %}";
+        document.getElementById('password1').setAttribute('required', 'required');
+        document.getElementById('password2').setAttribute('required', 'required');
+        document.getElementById('btn_submit').innerHTML = "Save";
+    }
+
+    document.getElementById('confirmSubmitButton').addEventListener('click', function() {
+        document.getElementById('user-form').submit();
+    });
+
+  
+</script>
+{% endblock %}

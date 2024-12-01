@@ -1,0 +1,167 @@
+
+{% load static %}
+<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+    {% if app_list %}
+    {% for app in app_list %}
+    {% if app.has_perms and not app.pinned %}
+    <li class="nav-item {% if 'dashboard' in parent %} menu-open {% endif %}">
+      <a class="nav-link {% if app_label != app.label and app.url not in request.path|urlencode  %} collapsed{% endif %}"
+        data-bs-toggle="collapse" data-bs-target="#submenu-{{ app.app_label }}" href="{{ app.url }}">
+        <i class="nav-icon {{ app.icon }}"></i>
+        <p>
+          {{ app.label|slice:10 }}{% if app.label|length > 10 %}..{% endif %}
+          <i class="right fas fa-angle-left"></i>
+        </p>
+      </a>
+
+      {% if app.models %}
+      <ul class="nav nav-treeview">
+        {% for model in app.models %}
+        {% if model.url %}
+        <li class="nav-item">
+          <a class="nav-link {% if 'bootstrap-tables' in segment or model.url in request.path|urlencode %} active {% endif %}"
+            href="{{ model.url }}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>{{ model.label }}</p>
+          </a>
+        </li>
+        {% else %}
+        <li class="nav-item">{{ model.label }}</li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    
+    <li class="nav-item">
+        <a href="{% url 'home' %}" class="nav-link">
+          <i class="nav-icon fas fa-tachometer-alt"></i>
+          <p>
+            Dashboard
+          </p>
+        </a>
+    </li>
+    <li class="nav-item {% if 'masterlist' in parent %} menu-open {% endif %}">
+        <a href="#" class="nav-link {% if 'masterlist' in parent %} active {% endif %}">
+            <i class="nav-icon fas fa-list"></i>
+            <p>
+                Master List
+                <i class="right fas fa-angle-left"></i>
+            </p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'allStudent-list' %}" class="nav-link {% if 'allStudent-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Student Year Info</p>
+                </a>
+            </li>
+        </ul>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'teacher-list' %}" class="nav-link {% if 'teacher-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Teacher List</p>
+                </a>
+            </li>
+        </ul>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'parent-list' %}" class="nav-link {% if 'parent-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Parent List</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="nav-item {% if 'reports' in parent %} menu-open {% endif %}">
+        <a href="#" class="nav-link {% if 'reports' in parent %} active {% endif %}">
+            <i class="nav-icon fas fa-print"></i>
+
+            <p>
+                Report
+                <i class="right fas fa-angle-left"></i>
+            </p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'student-list' %}" class="nav-link {% if 'student-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Student List</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="nav-item {% if 'maintenance' in parent %} menu-open {% endif %}">
+        <a href="#" class="nav-link {% if 'maintenance' in parent %} active {% endif %}">
+            <i class="fa fa-fw fa-calendar"></i>
+            <p>
+                Maintenance
+                <i class="right fas fa-angle-left"></i>
+            </p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'schoolyear-list' %}" class="nav-link {% if 'schoolyear-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>School Year</p>
+                </a>
+            </li>
+        </ul>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'section-list' %}" class="nav-link {% if 'section-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Section List</p>
+                </a>
+            </li>
+        </ul>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'subject-list' %}" class="nav-link {% if 'subject-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Subject List</p>
+                </a>
+            </li>
+        </ul>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'grade-level' %}" class="nav-link {% if 'grade-level' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Grade Level List</p>
+                </a>
+            </li>
+        </ul>
+        {% if request.user.is_superuser %}
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{% url 'user-list' %}" class="nav-link {% if 'user-list' in segment %} active {% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>User List</p>
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+    </li>
+
+    {% if request.user.is_authenticated %}
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="confirmLogout()">
+        <i class="fa fa-sign-out-alt nav-icon"></i>
+        <p>Logout</p>
+      </a>
+    </li>
+    <script type="text/javascript">
+        function confirmLogout() {
+            if (confirm("Are you sure you want to log out?")) {
+                window.location.href = "{% url 'logout' %}";
+            }
+        }
+    </script>
+    {% endif %} 
+    
+  
+  </ul>

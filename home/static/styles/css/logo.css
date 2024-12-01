@@ -1,0 +1,50 @@
+.logo {
+    margin-top: 20px;  /* Adjust the top margin */
+    text-align: center;
+    padding: 10px 0;   /* Add some padding */
+  }
+  
+  .logo a {
+    display: block;
+    text-decoration: none;  /* Remove text decoration */
+  }
+  
+  /* Logo image container styling */
+  .logo-image-big {
+    display: inline-block;  /* Align the logo horizontally */
+    max-width: 100%;        /* Ensure the image doesn't overflow */
+    padding: 10px;
+    background-color: #fff; /* Optional background color for emphasis */
+    border-radius: 8px;     /* Rounded corners for a more modern look */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    transition: transform 0.3s ease-in-out;  /* Smooth hover effect */
+  }
+  
+  /* Logo image styling */
+  .logo-image-big img {
+    max-width: 200px;  /* Adjust max-width to control the size */
+    height: auto;      /* Keep aspect ratio intact */
+    border-radius: 8px; /* Rounded corners for image */
+  }
+  
+  /* Add hover effect on logo */
+  .logo-image-big:hover {
+    transform: scale(1.05);  /* Slightly enlarge the logo on hover */
+  }
+  
+  /* Responsive design: make the logo smaller on smaller screens */
+  @media (max-width: 768px) {
+    .logo-image-big img {
+      max-width: 150px;  /* Reduce the size on smaller screens */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .logo-image-big img {
+      max-width: 120px;  /* Further reduce the size for mobile */
+    }
+  }
+
+  .input-group-addon{
+    width: 35px!important;
+  }

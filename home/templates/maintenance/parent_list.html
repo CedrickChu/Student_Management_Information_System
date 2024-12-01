@@ -1,0 +1,147 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %} Parents List {% endblock title %}
+{% block extrastyle %}
+<!-- DataTables -->
+<link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+{% endblock extrastyle %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Teacher List</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        {% if request.user.is_superuser %}
+                        <button style="float:left" type="button" class="btn btn-info" data-toggle="modal" data-target="#parentGuardianModal">
+                            <i class="glyphicon glyphicon-plus"></i> New Entry
+                        </button>
+                        {% endif %}
+                    </ol>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h1 class="text-center">Parent List</h1>
+                        </div>
+                        <div class="card-body">
+                            <div class="table">
+                                <table id="example1" class="table table-bordered table-striped">
+                                    <thead class="text-primary text-center">
+                                        <th>Name</th>
+                                        <th>Address</th>
+                                        <th>Contact Information</th>
+                                        {% if request.user.is_superuser %}
+                                        <th>Action</th>
+                                        {% endif %}
+                                    </thead>
+                                    <tbody>
+                                        {% for parent in parents %}
+                                        <tr>
+                                            <td>{{ parent.first_name }} {{ parent.middle_name }} {{ parent.last_name }}</td>
+                                            <td>{{ parent.address }}</td>
+                                            <td>{{ parent.contact_information }}</td>
+                                            <td class='text-center'>
+                                                {% if request.user.is_superuser %}
+                                                <button class="btn btn-danger edit_parent" type="button" data-id="{{ parent.id }}" data-toggle="modal" data-target="#updateParentModal">
+                                                <i class="fa fa-pen"> Edit</i></button>
+                                                <button type="button" class="btn btn-warning delete_parent" data-id="{{ parent.id }}" style="width:180px; margin-left: 20px;">
+                                                    <a style='color:white;' href="#">
+                                                        <i class="fa fa-trash">
+                                                          Delete
+                                                        </i>
+                                                    </a>
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <div>
+                                    {% include 'includes/pagination.html' %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'maintenance/parent_add_modal.html' %}
+{% include 'maintenance/parent_update_modal.html' %}
+{% endblock %}
+{% block extra_scripts %}
+<!-- DataTables  & Plugins -->
+<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+
+<script>
+    $(function () {
+        $("#example1").DataTable({
+            responsive: true,
+            lengthChange: false,
+            autoWidth: false,
+            paging: false,
+            info: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    });
+    $('.edit_parent').click(function() {
+        const parentId = $(this).attr('data-id');
+        $.ajax({
+            url: `{% url 'parent-update' 0 %}`.replace('0', parentId),
+            method: 'GET',
+            success: function(data) {
+                $('#updateParentForm').attr('action', `{% url 'parent-update' 0 %}`.replace('0', parentId));
+                $('#updateParentForm input[name="first_name"]').val(data.first_name);
+                $('#updateParentForm input[name="middle_name"]').val(data.middle_name);
+                $('#updateParentForm input[name="last_name"]').val(data.last_name);
+                $('#updateParentForm textarea[name="address"]').val(data.address);
+                $('#updateParentForm textarea[name="contact_information"]').val(data.contact_information);
+            }
+        });
+    });
+
+    $('.delete_parent').click(function() {
+        const parentId = $(this).attr('data-id');
+        if(confirm("Are you sure to delete this Parent?")) {
+            $.ajax({
+                url: "{% url 'parent-delete' %}",
+                method: 'POST',
+                data: { 'id': parentId, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                success: function(resp) {
+                    if (resp == 1) {
+                        alert("Data successfully deleted");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert("Failed to delete data");
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock extra_scripts%}

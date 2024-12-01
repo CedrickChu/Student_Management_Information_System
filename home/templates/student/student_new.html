@@ -1,0 +1,227 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} AdminLTE 3 | Dashboard {% endblock title %}
+
+{% block extrastyle %}
+
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="{% static 'plugins/jqvmap/jqvmap.min.css' %}">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+  <!-- summernote -->
+  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
+ 
+{% endblock extrastyle %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="main-panel">
+        <div class="content">
+            <br>
+            <div class="container container-fluid mx-auto">
+                <form id="combinedForm" method="post" action="{% url 'student-new' %}">
+                    {% csrf_token %}
+                    <h3 class="text-center">Add New Student</h3>
+                    <hr style="height:2px; color:black; background-color: black;">
+                    <div class="modal-body">
+                        <div id="form-errors" class="text-danger"></div>
+                        <h5>Student Information</h5>
+                        <div id="add-student-errors" class="text-danger"></div>
+                        <div class="container" style="width:90%;">
+                            <div class="form-group">
+                                {{ student_form.lrn.label_tag }}
+                                {{ student_form.lrn }}
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ student_form.first_name.label_tag }}
+                                        {{ student_form.first_name }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ student_form.middle_name.label_tag }}
+                                        {{ student_form.middle_name }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ student_form.last_name.label_tag }}
+                                        {{ student_form.last_name }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-auto" style="width: 333px;">
+                                    <div class="form-group">
+                                        {{ student_form.birth_date.label_tag }}
+                                        {{ student_form.birth_date }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ student_form.place_of_birth.label_tag }}
+                                        {{ student_form.place_of_birth }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-auto" style="width: 333px;">
+                                    <div class="form-group">
+                                        {{ student_form.gender.label_tag }}
+                                        {{ student_form.gender }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ student_form.address.label_tag }}
+                                        {{ student_form.address }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="parent_guardians">Parent/Guardian</label>
+                                        <div class="d-flex">
+                                            {{ student_form.parent_guardians }}
+                                            <button style="background-color:transparent;border: none;" class='read-more-info-icon' type="button" data-toggle="modal" data-target="#parentGuardianModal">
+                                                <i class="fa fa-plus"></i>
+                                                <span class="hidden-info">Add Parent/Guardian</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="form-errors" class="text-danger"></div>
+                        <h5>Student Year Information</h5>
+                        <div id="add-student-errors" class="text-danger"></div>
+                        <div class="container" style="width:90%;">
+                            <div class="row" style="display: none;">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="student">Select Existing Student: </label>
+                                        <div class="d-flex">
+                                            {{ student_info_form.student }}
+                                            <button style="background-color:white;border: none;" class='read-more-info-icon' type="button" data-toggle="modal" data-target="#addStudentModal">
+                                                <i class="fa fa-plus"></i>
+                                                <span class="hidden-info">Add Student</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="grade_level">Grade Level:</label>
+                                {{ student_info_form.grade_level }}
+                            </div>
+                            <div class="form-group">
+                                <label for="school_year">School Year:</label>
+                                {{ student_info_form.school_year }}
+                            </div>
+                            <div class="form-group">
+                                <label for="section">Section:</label>
+                                {{ student_info_form.section }}
+                            </div>
+                            <h5>Payment Status</h5>
+                            <hr style="height:2px; color:black; background-color: black;">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>First Quarter:</label>
+                                        {{ student_info_form.paid_first_quarter }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Second Quarter:</label>
+                                        {{ student_info_form.paid_second_quarter }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Third Quarter:</label>
+                                        {{ student_info_form.paid_third_quarter }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Fourth Quarter:</label>
+                                        {{ student_info_form.paid_fourth_quarter }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"><a href="{% url 'allStudent-list'%}" style='text-decoration: none; color:white;'>Cancel</a></button>
+                        <button type="submit" class="btn btn-primary" id="submitCombinedForm">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'student/student_add_modal.html' %}
+
+<script>
+    $(document).ready(function() {
+        var selectizeStudentElement = $('.js-selectize-student4');
+        var selectizeStudentInstance;
+
+        if (selectizeStudentElement.length) {
+            selectizeStudentInstance = selectizeStudentElement.selectize({
+                create: false
+            })[0].selectize;
+        }
+
+        $('#combinedForm').submit(function(event) {
+            event.preventDefault();
+
+            var formData = $(this).serialize();
+
+            $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        if (selectizeStudentInstance) {
+                            selectizeStudentInstance.addOption({ value: response.student_id, text: response.student_name });
+                            selectizeStudentInstance.refreshOptions(false);
+                            selectizeStudentInstance.setValue(response.student_id);
+                        }
+
+                        window.location.href = "{% url 'allStudent-list' %}";
+                        alert('Form submitted successfully');
+                    } else {
+                        console.error('Unexpected response:', response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    var errors = xhr.responseJSON.errors;
+                    $('#form-errors').html('');
+                    if (errors) {
+                        $.each(errors, function(field, errorMessages) {
+                            $('#form-errors').append('<p>' + field + ': ' + errorMessages.join(', ') + '</p>');
+                        });
+                    }
+                    $('#form-errors').show();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

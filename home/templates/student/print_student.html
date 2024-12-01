@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        .center {
+            text-align: center;
+        }
+        .center h4 {
+            margin-bottom: 4px;
+        }
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .header-container img {
+            height: 100px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            margin-top: 23vh;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 800;
+        }
+        .print-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 10px;
+            z-index: 1;
+        }
+        @media print {
+            @page {
+                size: landscape;
+                margin: 0;
+                size: auto;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+            }
+            table {
+                margin-bottom: 10px;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+            tr {
+                page-break-inside: avoid;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 6px;
+            }
+            th {
+                background-color: #f2f2f2;
+                font-weight: 800;
+            }
+            .print-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                padding: 10px;
+                z-index: 1;
+                margin-left: -10vh;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="print-header">
+        <div class="center">
+            <div class="header-container">
+                <img src="../../static/images/logo.png" alt="Little Angel Logo">
+                <div>
+                    <h4>PALAWAN LITTLE ANGELS LEARNING SCHOOL</h4>
+                    <p>{{ school.address }}</p>
+                    <p>{{ school.contact_number }}</p>
+                    <p>{{ grade_level_selected }}</p>
+                    <p>{{ school_year.year }}</p>
+                    <p>Principal : {{principal}}</p>
+                </div>
+            </div>
+        </div>
+    </header>
+    <table>
+        <thead class="display: table-header-group;">
+            <tr>
+                <th style="width:30px;">No.</th>
+                <th style="width:350px;">Name</th>
+                <th style="width:150px;">Birthday</th>
+                <th style="width:50px;">Gender</th>
+                <th style="width:50px;">Age</th>
+                <th style="width:300px;">Parent/Guardian</th>
+                <th style="width:400px;">Address</th>
+                <th style="width:350px;">Contact</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <td colspan="8">This is the table footer</td>
+            </tr>
+        </tfoot>
+        <tbody>
+            {% for item in student_ages %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.student.first_name }} {{ item.student.last_name }}</td>
+                <td>{{ item.student.birth_date }}</td>
+                <td>{{ item.student.gender }}</td>
+                <td>
+                    {% if item.age_years == 0 %}
+                        {{ item.age_months }} months, {{ item.age_days }}
+                    {% else %}
+                        {{ item.age_years }} 
+                    {% endif %}
+                </td>
+                <td>Mr & Mrs.{{ item.student.parent_guardians }}</td>
+                <td>{{ item.student.address }}</td>
+                <td>{{ item.student.parent_guardians.contact_information }}</td>
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+    </table>
+
+
+    <button class="no-print" onclick="window.print()">Print</button>
+    <button class="no-print"><a href="{% url 'student-list' %}" style="text-decoration:none; color:black;">Back</a></button>
+</body>
+</html>

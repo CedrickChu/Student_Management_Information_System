@@ -1,0 +1,170 @@
+<!-- Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" role="dialog" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStudentModalLabel">Add New Student</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addStudentForm" method="post" action="{% url 'student-add' %}">
+                {% csrf_token %}
+                {{ student_form.as_p }}
+                <div class="modal-body">
+                    <div id="add-student-errors" class="text-danger"></div>
+                    <h5>Student Information Information</h5>
+                    <hr style="height:2px; color:black; background-color: black;">
+                    <div class="container" style="width:90%;">
+                        <div class="form-group">
+                            <label for="lrn"></label>
+                            <input class="form-control" type="text" name="lrn" placeholder="LRN" required>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="first_name"></label>
+                                    <input class="form-control" type="text" name="first_name" placeholder="First Name" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="middle_name"></label>
+                                    <input class="form-control" type="text" name="middle_name" placeholder="Middle Name">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="last_name"></label>
+                                    <input class="form-control" type="text" name="last_name" placeholder="Last Name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-auto" style="width: 333px;">
+                                <div class="form-group">
+                                    <label for="birth_date">Birth Date:</label>
+                                    <input class="form-control" type="date" name="birth_date" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="place_of_birth">Place of birth:</label>
+                                    <textarea class="form-control" type="text" name="place_of_birth" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-auto" style="width: 333px;">
+                                <div class="form-group">
+                                    <label for="gender">Gender:</label>
+                                    <select style='height:40px;' class="form-control" name="gender" required>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="address">Address:</label>
+                                    <textarea class="form-control" name="address" rows="3" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="parent_guardians">Parent/Guardian</label>
+                                    <div class="d-flex">
+                                        <select class="form-control mr-2 js-selectize-parent" name="parent_guardians" style="height: 40px; width: 303px;" required>
+                                            <option value="" disabled selected style="display:none;"> Enter Parent/Guardian </option>
+                                            {% for parent_guardian in parent_guardians %}
+                                                <option value="{{ parent_guardian.id }}">{{ parent_guardian.first_name }} {{ parent_guardian.last_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button style="background-color:white;border: none;" class='read-more-info-icon' type="button" data-toggle="modal" data-target="#parentGuardianModal">
+                                            <i class="fa fa-plus"></i>
+                                            <span class="hidden-info">Add Parent/Guardian</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitAddStudent">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% include 'maintenance/parent_add_modal.html' %}
+<script>
+    $(document).ready(function() {
+        // Initialize Selectize for Student Modal
+        var selectizeStudentElement = $('.js-selectize-student');
+        var selectizeStudentInstance;
+
+        if (selectizeStudentElement.length) {
+            selectizeStudentInstance = selectizeStudentElement.selectize({
+                create: false
+            })[0].selectize;
+        }
+
+        $('#addStudentForm').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        var currentUrlPath = window.location.pathname;
+
+                        var studentListPath = '/student/';
+                        var allStudentListPath = '/allStudent/';
+                        var modal = new bootstrap.Modal(document.getElementById('addStudentModal'));
+                        setTimeout(() => {
+                            modal.hide();
+                        }, 10000)
+
+                        // Close the modal based on current path
+                        if (currentUrlPath === studentListPath) {
+                            // Redirect to student list page
+                            window.location.href = studentListPath;
+                        } else if (currentUrlPath === allStudentListPath) {
+                            // Update selectize and close modal
+                            if (selectizeStudentInstance) {
+                                selectizeStudentInstance.addOption({ value: response.student_id, text: response.student_name });
+                                selectizeStudentInstance.refreshOptions(false);
+                                selectizeStudentInstance.setValue(response.student_id);
+                            }
+                            modal.hide(); // Hide the modal
+                        }
+                        alert('Student added successfully');
+                    } else {
+                        $('#add-student-errors').html('');
+                        $.each(response.errors, function(field, error) {
+                            $('#add-student-errors').append('<p>' + field + ': ' + error.join(', ') + '</p>');
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    var errors = xhr.responseJSON.errors;
+                    $('#add-student-errors').html('');
+                    if (errors) {
+                        $.each(errors, function(field, error) {
+                            $('#add-student-errors').append('<p>' + field + ': ' + error.join(', ') + '</p>');
+                        });
+                    }
+                    $('#add-student-errors').show();
+                }
+            });
+        });
+    });
+</script>

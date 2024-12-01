@@ -1,0 +1,59 @@
+<!-- Your modal code -->
+<div class="modal fade" id="syiModal" tabindex="-1" role="dialog" aria-labelledby="syiModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="syiModalLabel">Student Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="studentStatusForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select style='height:40px;' class="form-control" name="status" id="status" required>
+                            <option value="new">New</option>
+                            <option value="old">Old</option>
+                            <option value="transferee">Transferee</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Student</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('studentStatusForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const status = document.getElementById('status').value;
+
+        let url;
+        switch(status) {
+            case 'new':
+                url = '{% url "student-new" %}';
+                break;
+            case 'old':
+               url = '{% url "student-old" %}';
+                break;
+            case 'transferee':
+                url = '{% url "student-transfer" %}';
+                break;
+            default:
+                alert('Invalid status');
+                return;
+        }
+        window.location.href = url;
+
+    });
+</script>
+
+{% include 'student/studentinfo_add_modal.html' %}

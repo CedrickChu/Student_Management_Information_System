@@ -1,0 +1,41 @@
+<div class="modal fade" id="addStudentGradeModal" tabindex="-1" role="dialog" aria-labelledby="addStudentGradeModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="addStudentGradeModalLabel">Add Student Grade</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-student-grade-form" method="POST" action="{% url 'student_academic_record' student.id %}{% if grade_level_id %}?grade_level={{ grade_level_id }}{% endif %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="grade_level" value="{{ default_student_info.grade_level.id }}">
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select name="subject" class="form-control" style="height:40px;" required>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="first_grading">First Grading</label>
+                        <input type="number" name="first_grading" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="second_grading">Second Grading</label>
+                        <input type="number" name="second_grading" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="third_grading">Third Grading</label>
+                        <input type="number" name="third_grading" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fourth_grading">Fourth Grading</label>
+                        <input type="number" name="fourth_grading" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Grade</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

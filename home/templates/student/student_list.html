@@ -1,0 +1,173 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %} All Student List {% endblock title %}
+{% block extrastyle %}
+<!-- DataTables -->
+<link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+{% endblock extrastyle %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Student List</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        {% if request.user.is_superuser %}
+                        <button style="float:left;margin-right:20px;" type="button" class="btn btn-info" data-toggle="modal" data-target="#addStudentModal">
+                            <i class="glyphicon glyphicon-plus"></i> New Entry
+                        </button>
+                        {% endif %}
+                        <span id='returncode'></span>
+                        <button style="float:right" class="btn btn-info" data-toggle="modal" data-target="#selectSchoolYearModal">
+                            <i class="glyphicon glyphicon-print"></i> PRINT
+                        </button>
+                    </ol>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table">
+                                <table id="example1" class="table table-bordered table-striped">
+                                    <thead class="text-primary text-center">
+                                        <th>LRN No.</th>
+                                        <th>Name</th>
+                                        <th>Parent/Guardian</th>
+                                        <th>Action</th>
+                                    </thead>
+                                    <tbody>
+                                        {% for student in students %}
+                                        <tr>
+                                            <td>
+                                                <div style="width:60%; margin:auto;">
+                                                    {{ student.lrn }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style="width:70%; margin:auto;">
+                                                    {{ student.first_name }} {{ student.middle_name }} {{ student.last_name }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style="width:70%; margin:auto;">
+                                                    {{ student.parent_guardians.first_name }} {{ student.parent_guardians.middle_name }} {{ student.parent_guardians.last_name }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div>
+                                                    <button class="btn btn-danger" style="margin-right: 20px;"
+                                                            data-toggle="modal"
+                                                            data-target="#studentModal{{ student.id }}"
+                                                            data-lrn="{{ student.lrn }}"
+                                                            data-name="{{ student.first_name }} {{ student.middle_name }} {{ student.last_name }}"
+                                                            data-gender="{{ student.gender }}"
+                                                            data-grade_level="{{ student.grade_level }}"
+                                                            data-birth_date="{{ student.birth_date }}"
+                                                            data-place_of_birth="{{ student.place_of_birth }}"
+                                                            data-address="{{ student.address }}"
+                                                            data-parent_guardian="{{ student.parent_guardians }}"
+                                                            data-parent_guardian_address="{{ student.parent_guardians.address }}"
+                                                            data-student_parent_guardian_contact="{{ student.parent_guardians.contact_information }}"
+                                                    ><i class="fa fa-eye"></i>
+                                                        View Profile
+                                                    </button>
+                                                    {% if request.user.is_superuser %}
+                                                    <button type="button" class="btn btn-warning">
+                                                        <a style='color:white;' href="{% url 'student-delete' student.pk %}">
+                                                            <i class="fa fa-trash"> Delete</i>
+                                                        </a>
+                                                    </button>
+                                        
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <div>
+                                    {% include 'includes/pagination.html' %}
+                                </div>
+                                <script>
+                                    $(document).ready(function() {
+                                        $('div[id^="studentModal"]').on('show.bs.modal', function(event) {
+                                            var button = $(event.relatedTarget);
+                                            var name = button.data('name');
+                                            var lrn = button.data('lrn');
+                                            var gender = button.data('gender');
+                                            var grade_level = button.data('grade_level');
+                                            var birth_date = button.data('birth_date');
+                                            var place_of_birth = button.data('place_of_birth');
+                                            var address = button.data('address');
+                                            var parent_guardian = button.data('parent_guardian');
+                                            var parent_guardian_address = button.data('parent_guardian_address');
+                                            var student_parent_guardian_contact = button.data('student_parent_guardian_contact');
+
+                                            var modal = $(this);
+                                            modal.find('.modal-title').text('Student Details');
+                                            modal.find('#modal-student-name').text(name);
+                                            modal.find('#modal-student-lrn').text(lrn);
+                                            modal.find('#modal-student-gender').text(gender);
+                                            modal.find('#modal-student-grade_level').text(grade_level);
+                                            modal.find('#modal-student-birth_date').text(birth_date);
+                                            modal.find('#modal-student-place_of_birth').text(place_of_birth);
+                                            modal.find('#modal-student-address').text(address);
+                                            modal.find('#modal-student-parent_guardian').text(parent_guardian);
+                                            modal.find('#modal-student-parent_guardian_address').text(parent_guardian_address);
+                                            modal.find('#modal-student-parent_guardian_contact').text(student_parent_guardian_contact);
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ta-Modals -->
+{% include 'student/student_details_modal.html' %}
+
+{% include 'student/student_add_modal.html' %}
+
+{% include 'student/filter_print.html' %}
+
+{% endblock content%}
+
+{% block extra_scripts %}
+<!-- DataTables  & Plugins -->
+<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+<script>
+    $(function () {
+        $("#example1").DataTable({
+            responsive: true,
+            lengthChange: false,
+            autoWidth: false,
+            paging: false,
+            info: false,
+            buttons: ["colvis"]
+        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    });
+
+</script>
+{% endblock extra_scripts%}

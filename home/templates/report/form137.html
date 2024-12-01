@@ -1,0 +1,102 @@
+1{% extends 'base.html' %}
+<style>
+	@media print {  
+		@page {
+			size:8.5in 13in;
+		}
+		head{
+			height:0px;
+			display: none;
+		}
+		#head{
+			display: none;
+			height:0px;
+		}
+		#print{
+		position:fixed;
+		top:0px;
+		margin-top:20px;
+		margin-bottom:30px;
+		margin-right:50px;
+		margin-left:50px;
+		}
+		}
+		#print{
+		width:7.5in;
+		}
+		input {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    border-bottom: 1px solid black;
+}
+
+.foo{
+	font-family: "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif;
+	font-size: 24px;
+	font-style: italic;
+	font-variant: normal;
+	font-weight: bold;
+	line-height: 24px;
+	}
+	.p {
+	font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+	font-size: 14px;
+	font-style: italic;
+	font-variant: normal;
+	font-weight: 550;
+	line-height: 20px;
+	 letter-spacing: 2px;
+}
+</style>
+{% block content %}
+<div class="wrapper">
+    <span id='returncode'></span>
+    {% include '../sidebar.html' %}
+    <div class="main-panel">
+        {% include '../navbar.html' %}
+        <div class="content">
+            <span id='returncode'></span>
+            <div class="col-md-2" id="head">
+                <button class="btn btn-info" onclick="print()"><i class="glyphicon glyphicon-print"></i>PRINT</button>
+                <a class="btn btn-info" onclick="window.close()">Cancel</a>
+            </div>
+            <div id='print'>
+                <div style="margin-left:.5in;margin-right:.5in;margin-top:.1in;margin-bottom:.1in;line-height:1mm;">
+                    <p><b>Student Grading System</b></p>
+                </div>
+                <div class="row">
+                          <div class="col-md-12">
+                            <p><b><h4>SECONDARY STUDENT'S PERMANENT RECORDS</h4></b></p>
+                          </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table style="line-height:5mm">
+                            <tr>
+                                {% for student in students%}
+                                <td style="width:600px;font-size:12px">
+                                    <label for="" >Name:&nbsp&nbsp&nbsp&nbsp&nbsp</label>
+                                        <b style="font-size:13px;text-transform: uppercase;">{{ student.first_name}} {{ student.middle_name}} {{ student.last_name}}</b>
+                                        <br>
+                                    <label for="">Place of Birth:&nbsp&nbsp&nbsp&nbsp&nbsp</label>
+                                    <h style="font-size:12px">{{student.place_of_birth}}</h>
+                                </td>
+                                <td style="width:600px;font-size:12px">
+                                <label for="">Date of Birth:&nbsp&nbsp&nbsp&nbsp&nbsp</label>
+                                    <h style="font-size:12px">{{student.birth_date}}</h>
+                                    <br>
+                                    <label for="">Town / City:&nbsp&nbsp&nbsp&nbsp&nbsp</label>
+                                    <h style="font-size:12px">{{ student.address}}</h>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                        </table>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+<!-- Parent/Guardian Modal -->
+<div class="modal fade" id="parentGuardianModal" tabindex="-1" role="dialog" aria-labelledby="parentGuardianModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="parentGuardianModalLabel">Add Parent/Guardian</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addParentForm" method="post" action="{% url 'parent-add' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div id="parent-guardian-errors" class="text-danger"></div>
+                    <h5>Parent/Guardian Information</h5>
+                    <hr style="height:2px; color:black; background-color: black;">
+                    <div class="container" style="width:90%;">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="first_name">First Name:</label>
+                                    <input class="form-control" type="text" name="first_name" id="first_name" placeholder="Parent First Name" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="middle_name">Middle Name:</label>
+                                    <input class="form-control" type="text" name="middle_name" id="middle_name" placeholder="Parent Middle Name">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="last_name">Last Name:</label>
+                                    <input class="form-control" type="text" name="last_name" id="last_name" placeholder="Parent Last Name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="address">Address:</label>
+                                    <textarea class="form-control" name="address" id="address" rows="3" placeholder="Parent/Guardian Address" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="contact_information">Contact Information:</label>
+                                    <input class="form-control" type="text" name="contact_information" id="contact_information" placeholder="Parent Contact Information" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitAddParent">Add Parent/Guardian</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        var selectizeElement = $('.js-selectize-parent');
+        var selectizeInstance;
+
+        if (selectizeElement.length) {
+            selectizeInstance = selectizeElement.selectize({
+                create: false
+            })[0].selectize;
+        }
+
+        $('#addParentForm').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+
+            $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        // Get current URL path
+                        var currentUrlPath = window.location.pathname;
+
+                        var parentListPath = '/parent/';
+                        var studentListPath = '/student/';
+                        var allStudentListPath = '/newstudent/';
+
+                        // If the current path is /parent/, just reload after adding parent
+                        if (currentUrlPath === parentListPath) {
+                            // Reload the current page if on parent list
+                            window.location.href = parentListPath;
+                        } else if ((currentUrlPath === studentListPath && selectizeInstance) ||
+                                (currentUrlPath === allStudentListPath && selectizeInstance)) {
+                            // Else if current path is /student/ or /allStudent/, populate the selectize option with the new parent
+                            selectizeInstance.addOption({ value: response.parent_id, text: response.parent_name });
+                            selectizeInstance.refreshOptions(false);
+                            selectizeInstance.setValue(response.parent_id);
+                        }
+
+                        alert('Parent added successfully');
+                        $('#parentGuardianModal').modal('hide');
+                    } else {
+                        console.error('Unexpected response:', response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    var errors = xhr.responseJSON.errors;
+                    $('#parent-guardian-errors').html('');
+                    if (errors) {
+                        $.each(errors, function(field, errors) {
+                            $('#parent-guardian-errors').append('<p>' + field + ': ' + errors.join(', ') + '</p>');
+                        });
+                    }
+                    $('#parent-guardian-errors').show();
+                }
+            });
+        });
+    });
+</script>

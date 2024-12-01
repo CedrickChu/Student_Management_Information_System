@@ -1,0 +1,81 @@
+<!-- Edit Student Grade Modal -->
+<div class="modal fade" id="editStudentGradeModal" tabindex="-1" role="dialog" aria-labelledby="editStudentGradeModalLabel">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStudentGradeModalLabel">Update Grade</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="updateGradeForm" method="POST" action="{% url 'update_student_grade' 0 %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="grade_id" id="edit-grade-id">
+                    <div class="form-group">
+                        <label for="edit-first-grading">First Grading</label>
+                        <input type="number" step="0.01" name="first_grading" id="edit-first-grading" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-second-grading">Second Grading</label>
+                        <input type="number" step="0.01" name="second_grading" id="edit-second-grading" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-third-grading">Third Grading</label>
+                        <input type="number" step="0.01" name="third_grading" id="edit-third-grading" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-fourth-grading">Fourth Grading</label>
+                        <input type="number" step="0.01" name="fourth_grading" id="edit-fourth-grading" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#editStudentGradeModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var id = button.data('id');
+            var first_grading = button.data('first_grading');
+            var second_grading = button.data('second_grading');
+            var third_grading = button.data('third_grading');
+            var fourth_grading = button.data('fourth_grading');
+
+            var modal = $(this);
+            modal.find('form').attr('action', "{% url 'update_student_grade' 0 %}"); // Set URL with placeholder
+            modal.find('#edit-grade-id').val(id);
+            modal.find('#edit-first-grading').val(first_grading);
+            modal.find('#edit-second-grading').val(second_grading);
+            modal.find('#edit-third-grading').val(third_grading);
+            modal.find('#edit-fourth-grading').val(fourth_grading);
+        });
+
+        $('#updateGradeForm').submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+            var form = $(this);
+            var url = form.attr('action');
+            var formData = form.serialize(); // Serialize form data
+
+            $.ajax({
+                type: 'POST',
+                url: url.replace('0', $('#edit-grade-id').val()), // Replace placeholder with actual grade_id
+                data: formData,
+                success: function(response) {
+                    $('#editStudentGradeModal').modal('hide'); // Hide modal on success
+                    location.reload(); // Reload the page or update relevant parts dynamically
+                },
+                error: function(error) {
+                    console.log(error);
+                    alert('Failed to update grade.'); // Handle errors appropriately
+                }
+            });
+        });
+    });
+</script>

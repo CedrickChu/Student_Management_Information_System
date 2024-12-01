@@ -1,0 +1,102 @@
+<!-- Update Parent Modal -->
+<div class="modal fade" id="updateParentModal" tabindex="-1" role="dialog" aria-labelledby="updateParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateParentModalLabel">Update Parent Information</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="updateParentForm" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div id="update-form-errors" class="text-danger"></div>
+                    <h5>Parent Information</h5>
+                    <hr style="height:2px; color:black; background-color: black;">
+                    <div class="container" style="width:90%;">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="first_name">First Name</label>
+                                    <input class="form-control" type="text" name="first_name" value="" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="middle_name">Middle Name</label>
+                                    <input class="form-control" type="text" name="middle_name" value="">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="last_name">Last Name</label>
+                                    <input class="form-control" type="text" name="last_name" value="" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="address">Address</label>
+                                    <textarea class="form-control" name="address" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="contact_information">Contact Information</label>
+                                    <textarea class="form-control" name="contact_information" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div>
+                <div id="msg" class="form-group"></div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="submitUpdateParent">Update Parent</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#updateParentForm').on('reset', function() {
+        $('#msg').html('');
+        $('input:hidden').val('');
+    });
+
+    $('#updateParentForm').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            method: 'POST',
+            success: function(response) {
+                console.log(response);
+                if (response.status === 1) {
+                    alert('Successfully updated data');
+                    location.reload();
+
+                    $(".modal").modal("hide");
+                    $(".modal-backdrop").remove();
+                } else {
+                    $('#msg').html('<div class="alert alert-danger mx-2">Failed to update data.</div>');
+                    $(".modal-fade").modal("hide");
+                    $(".modal-backdrop").remove();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText); 
+                $('#msg').html('<div class="alert alert-danger mx-2">Error: ' + error + '</div>');
+            }
+        });
+    });
+
+    $('.select2').select2({
+        placeholder: "Please Select here",
+        width: '100%'
+    });
+</script>

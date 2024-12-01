@@ -1,0 +1,11 @@
+.modal {
+    z-index: 1051 !important;  /* Ensure the modal is on top */
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;  /* Place the backdrop just below the modal */
+}
+
+aside.main-sidebar {
+    z-index: 1000;  /* Ensure the sidebar is behind the modal */
+}
