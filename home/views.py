@@ -251,7 +251,7 @@ def all_events(request):
         out.append({                                                                                                     
             'title': event.name,  
             'id': event.pk,
-            'note': event.note,                                                                                          
+            'note': event.note,                                                                                   
             'start': event.start.strftime("%Y-%m-%dT%H:%M:%S"), 
             'end': event.end.strftime("%Y-%m-%dT%H:%M:%S"),
             'color': event.color,                                                         
@@ -272,10 +272,11 @@ def add_event(request):
     return JsonResponse(data)
  
 def update_event(request):
-    if request.method == 'GET':  # Or POST, depending on your logic
+    if request.method == 'GET':  
         event_id = request.GET.get('id')
         title = request.GET.get('name')
         start = request.GET.get('start')
+        note = request.GET.get("note")
         end = request.GET.get('end')
         color = request.GET.get('color')
 
@@ -283,6 +284,7 @@ def update_event(request):
             event = Event.objects.get(id=event_id)
             event.name = title
             event.start = start
+            event.note = note
             event.end = end
             event.color = color
             event.save()

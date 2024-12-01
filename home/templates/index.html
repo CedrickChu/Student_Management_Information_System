@@ -176,6 +176,7 @@
                 </div>
             </div>
             {% endif %}
+              
         </div>
     </section>
   {% endblock content %}
@@ -312,9 +313,17 @@
                         element.css('background-color', event.color);
                         element.css('border-color', event.color);
                     }
-                    
+                
                     element.find('.fc-time').remove();
+                
+                    // Prepend the calendar icon to the event title
                     element.find('.fc-title').prepend('<i class="fa fa-calendar"></i> ');
+                    element.find('.fc-title').prepend('<strong>Event Title: </strong>');
+                
+                    // Add the note under the title if it exists
+                    if (event.note) {
+                        element.find('.fc-title').after('<div class="fc-note">'+ 'Note: ' + event.note + '</div>');
+                    }
                 }
             });
     
@@ -546,4 +555,4 @@
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <script src="{% static 'dist/js/pages/dashboard2.js' %}"></script>
 
-  {% endblock
+  {% endblock extra_scripts %}
