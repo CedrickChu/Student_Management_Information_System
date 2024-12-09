@@ -208,11 +208,15 @@
 
 <script>
     $(document).ready(function() {
+        // Initialize Selectize instances for student info and student transfer
+        var selectizeStudentInfoInstance = $('.js-selectize-student4').selectize()[0].selectize;
+        var selectizeStudentTransferInstance = $('.js-selectize-student5').selectize()[0].selectize;
+    
         $('#combinedForm').submit(function(event) {
             event.preventDefault();
-
+    
             var formData = $(this).serialize();
-
+    
             $.ajax({
                 type: 'POST',
                 url: $(this).attr('action'),
@@ -224,12 +228,14 @@
                             selectizeStudentInfoInstance.refreshOptions(false);
                             selectizeStudentInfoInstance.setValue(response.student_id);
                         }
+    
                         if (selectizeStudentTransferInstance) {
                             selectizeStudentTransferInstance.addOption({ value: response.student_id, text: response.student_name });
                             selectizeStudentTransferInstance.refreshOptions(false);
                             selectizeStudentTransferInstance.setValue(response.student_id);
                         }
-
+    
+                        // Redirect to student list page
                         window.location.href = "{% url 'allStudent-list' %}";
                         alert('Form submitted successfully');
                     } else {
@@ -251,8 +257,6 @@
                         $('#form-errors').append('<p>' + field + ': ' + errorMessages.join(', ') + '</p>');
                     });
                     $('#form-errors').show();
-                    alert('Form submitted successfully');
-                    window.location.href = "{% url 'allStudent-list' %}";
                 }
             });
         });

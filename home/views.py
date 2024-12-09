@@ -1171,32 +1171,47 @@ def student_transfer(request):
         student_form = StudentForm(request.POST)
         student_info_form = StudentInfoForm(request.POST)
         student_transfer_form = TransferInfoForm(request.POST)
+
         if student_form.is_valid():
             student = student_form.save()
+
             student_info_data = request.POST.copy()
             student_info_data['student'] = student.id
-            student_info_data['status'] = 'Transferee'
+            student_info_data['status'] = 'transferee'
+
             student_info_form = StudentInfoForm(student_info_data)
 
             if student_info_form.is_valid() and student_transfer_form.is_valid():
-                student_info_instance = student_info_form.save()
-                log_admin_action(request, student_info_instance, ADDITION, "Student Year Info Added through custom page.")
-                student_transfer_instance = student_transfer_form.save()
-                log_admin_action(request, student_transfer_instance, ADDITION, "Student Added through custom page.")
+                student_info_instance = student_info_form.save(commit=False)
+                student_info_instance.status = 'transferee'
+                student_info_instance.save()
+
+                student_transfer_instance = student_transfer_form.save(commit=False)
+                student_transfer_instance.student = student
+                student_transfer_instance.save()
+
+                # Log actions
+                log_admin_action(request, student_info_instance, ADDITION, "Student Year Info Added.")
+                log_admin_action(request, student_transfer_instance, ADDITION, "Student Transfer Info Added.")
+
+                # Return success response for AJAX
                 return JsonResponse({
                     'success': True,
                     'student_id': student.id,
                     'student_name': f"{student.lrn} - {student.first_name} {student.middle_name} {student.last_name}"
                 })
+
             else:
                 errors = {
                     'student_info_form': student_info_form.errors,
                     'student_transfer_form': student_transfer_form.errors
                 }
                 return JsonResponse({'success': False, 'errors': errors}, status=400)
+
         else:
             return JsonResponse({'success': False, 'errors': {'student_form': student_form.errors}}, status=400)
 
+    # For GET request, render empty forms
     student_form = StudentForm()
     student_info_form = StudentInfoForm()
     student_transfer_form = TransferInfoForm()
@@ -1206,7 +1221,6 @@ def student_transfer(request):
         'student_info_form': student_info_form,
         'student_transfer_form': student_transfer_form,
     })
-
 
 
 def widgets(request):

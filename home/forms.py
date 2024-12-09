@@ -158,7 +158,7 @@ class StudentInfoForm(forms.ModelForm):
             'paid_first_quarter', 'paid_second_quarter', 'paid_third_quarter', 'paid_fourth_quarter'
         ]
         widgets = {
-            'student': forms.Select(attrs={'class': 'form-control'}),
+            'student': forms.Select(attrs={'class': 'form-control mr-2 js-selectize-student4', 'style': 'height:40px;'}),
             'grade_level': forms.Select(attrs={'class': 'form-control', 'style': 'height:40px'}),
             'school_year': forms.Select(attrs={'class': 'form-control', 'style': 'height:40px'}),
             'section': forms.Select(attrs={'class': 'form-control', 'style': 'height:40px'}),
@@ -191,7 +191,7 @@ class TransferInfoForm(forms.ModelForm):
             'student', 'previous_school_name', 'previous_school_address', 'transfer_date',
         ]
         widgets = {
-            'student': forms.Select(attrs={'class': 'form-control'}),
+            'student': forms.Select(attrs={'class': 'form-control mr-2 js-selectize-student5', 'style': 'height:40px;'}),
             'previous_school_name': forms.TextInput(attrs={'class': 'form-control'}),
             'previous_school_address': forms.TextInput(attrs={'class': 'form-control'}),
             'transfer_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),

@@ -171,8 +171,16 @@ class TransferInfo(models.Model):
     previous_school_address = models.TextField(help_text='Full Address of the Previous School')
     transfer_date = models.DateField()
 
+    def save(self, *args, **kwargs):
+        if self.student.studentinfo_set.exists():
+            student_info = self.student.studentinfo_set.first()
+            student_info.status = 'transferee'
+            student_info.save()
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Transfer Info for {self.student_info.student} ({self.student_info.school_year})"
+        return f"Transfer Info for {self.student}"
 
 class Subject(models.Model):
     name = models.CharField(max_length=100)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, SchoolYear, GradeLevel, Student, Subject, ParentGuardian, Teacher, Section, StudentInfo, StudentGrade, Event, Principal
+from .models import User, SchoolYear, GradeLevel, Student, Subject, ParentGuardian, Teacher, Section, StudentInfo, StudentGrade, Event, Principal, TransferInfo
 from .widgets import PastCustomDatePickerWidget
 from django.db import models
 
@@ -34,7 +34,7 @@ admin.site.register(ParentGuardian)
 admin.site.register(StudentInfo)
 admin.site.register(SchoolYear)
 admin.site.register(Principal)
-
+admin.site.register(TransferInfo)
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     formfield_overrides = {

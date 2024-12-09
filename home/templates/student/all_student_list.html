@@ -83,7 +83,7 @@
                         {% for student_info in student_infos %}
                         <tr>
                             <td>{{ student_info.student.lrn }}</td>
-                            <td>{{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }}</td>
+                            <td>{{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }} <span class="badge badge-warning">{{student_info.status}}</span></td>
                             <td>{{ student_info.grade_level }}</td>
                             <td>{{ student_info.section }}</td>
                             <td>{{ student_info.school_year.year }}</td>
