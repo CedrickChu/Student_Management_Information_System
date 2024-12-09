@@ -41,7 +41,7 @@
                 <form id="filter-form" method="GET" action="{% url 'allStudent-list' %}">
                     <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
                         <select name="grade_level" class="form-control" style="height:40px;">
-                            <option value="">Select Grade Level (Default All)</option>
+                            <option value="">Select Grade Level (Default Current)</option>
                             {% for level in grade_levels %}
                             <option value="{{ level.id }}" {% if request.GET.grade_level == level.id|stringformat:'s' %} selected {% endif %}>{{ level.name }}</option>
                             {% endfor %}
@@ -49,14 +49,14 @@
                     </div>
                     <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
                         <select name="school_year" class="form-control" style="height:40px;">
-                            <option value="">Select School Year (Default All)</option>
+                            <option value="">Select School Year (Default Current Year)</option>
                             {% for year in school_years %}
                             <option value="{{ year.id }}" {% if request.GET.school_year == year.id|stringformat:'s' %} selected {% endif %}>{{ year.year }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div style="float: right; margin-right: 10px;">
-                        <button style="height: 40px;" type="button" class="btn btn-primary" onclick="filterStudents()">Filter</button>
+                        <button style="height: 40px;" type="submit" class="btn btn-primary">Filter</button>
                     </div>
                 </form>
               </div>
@@ -83,7 +83,10 @@
                         {% for student_info in student_infos %}
                         <tr>
                             <td>{{ student_info.student.lrn }}</td>
-                            <td>{{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }} <span class="badge badge-warning">{{student_info.status}}</span></td>
+                            <td>{{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }} 
+                                {% if student_info.status != 'old'%}
+                                <span class="badge badge-warning">{{student_info.status}}</span></td>
+                                {% endif %}
                             <td>{{ student_info.grade_level }}</td>
                             <td>{{ student_info.section }}</td>
                             <td>{{ student_info.school_year.year }}</td>

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 {% load static %}
 
 {% block title %} AdminLTE 3 | Dashboard {% endblock title %}
@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
  
 {% endblock extrastyle %}
-{% block bodyclass %} hold-transition sidebar-mini layout-fixed {% endblock bodyclass %}
+{% block bodyclass %}hold-transition sidebar-mini layout-fixed layout-navbar-fixed"{% endblock bodyclass %}
 {% block content %}
 
 <div class="content-wrapper">

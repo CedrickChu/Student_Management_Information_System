@@ -202,10 +202,18 @@ def allStudent_list(request):
     grade_level_filter = request.GET.get('grade_level')
     school_level_filter = request.GET.get('school_year')
 
-    if grade_level_filter:
-        student_infos = student_infos.filter(grade_level_id=grade_level_filter)
+    current_school_year = SchoolYear.objects.filter(status=True).first()
+
+    if school_level_filter != 'all' and not school_level_filter and current_school_year:
+        student_infos = student_infos.filter(school_year=current_school_year)
+
     if school_level_filter:
         student_infos = student_infos.filter(school_year_id=school_level_filter)
+
+    # Apply the grade level filter if specified
+    if grade_level_filter:
+        student_infos = student_infos.filter(grade_level_id=grade_level_filter)
+
 
     paginator = Paginator(student_infos, 10)
     page_number = request.GET.get('page')
@@ -390,11 +398,20 @@ def user_update(request, pk):
 
 @login_required
 def student_list(request):
-    students = Student.objects.all()
+    students = Student.objects.prefetch_related(
+        'studentinfo_set',
+        'transfer_info'
+    ).all()
+
     parent_guardians = ParentGuardian.objects.all()
     school_years = SchoolYear.objects.all()
     grade_levels = GradeLevel.objects.all()
 
+    # Create a mapping of students to their transfer info
+    transfer_data = {
+        student.id: student.transfer_info
+        for student in students if hasattr(student, 'transfer_info')
+    }
 
     paginator = Paginator(students, 10)
     page_number = request.GET.get('page')
@@ -405,6 +422,7 @@ def student_list(request):
         'parent_guardians': parent_guardians,
         'school_years': school_years,
         'grade_levels': grade_levels,
+        'transfer_data': transfer_data,
         'paginator': paginator,
         'page_obj': page_obj,
         'is_paginated': page_obj.has_other_pages(),
@@ -1143,7 +1161,8 @@ def student_old(request):
         if student_form.is_valid():
             student_info = student_form.save(commit=False)
             student_info.status = 'old'
-            log_admin_action(request, student_info, ADDITION, "Student Year Info Added through custom page.")
+            student_info.save()
+            log_admin_action(request, student_info, ADDITION, "Student Year Info Added.")
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'errors': student_form.errors}, status=400)

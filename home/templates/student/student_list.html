@@ -75,6 +75,11 @@
                                                             data-parent_guardian="{{ student.parent_guardians }}"
                                                             data-parent_guardian_address="{{ student.parent_guardians.address }}"
                                                             data-student_parent_guardian_contact="{{ student.parent_guardians.contact_information }}"
+                                                            {% if student.transfer_info %}
+                                                            data-previous_school_name="{{ student.transfer_info.previous_school_name }}"
+                                                            data-previous_school_address="{{ student.transfer_info.previous_school_address }}"
+                                                            data-transfer_date="{{ student.transfer_info.transfer_date }}"
+                                                            {% endif %}
                                                     ><i class="fa fa-eye"></i>
                                                         View Profile
                                                     </button>
@@ -84,7 +89,6 @@
                                                             <i class="fa fa-trash"> Delete</i>
                                                         </a>
                                                     </button>
-                                        
                                                     {% endif %}
                                                 </div>
                                             </td>
@@ -109,7 +113,12 @@
                                             var parent_guardian = button.data('parent_guardian');
                                             var parent_guardian_address = button.data('parent_guardian_address');
                                             var student_parent_guardian_contact = button.data('student_parent_guardian_contact');
-
+                                            
+                                            // Transfer info data (only if it exists)
+                                            var previous_school_name = button.data('previous_school_name') || '';
+                                            var previous_school_address = button.data('previous_school_address') || '';
+                                            var transfer_date = button.data('transfer_date') || '';
+                                    
                                             var modal = $(this);
                                             modal.find('.modal-title').text('Student Details');
                                             modal.find('#modal-student-name').text(name);
@@ -122,6 +131,17 @@
                                             modal.find('#modal-student-parent_guardian').text(parent_guardian);
                                             modal.find('#modal-student-parent_guardian_address').text(parent_guardian_address);
                                             modal.find('#modal-student-parent_guardian_contact').text(student_parent_guardian_contact);
+                                    
+                                            // Populate transfer information if available
+                                            if (previous_school_name || previous_school_address || transfer_date) {
+                                                modal.find('#modal-student-previous-school-name').text(previous_school_name);
+                                                modal.find('#modal-student-previous-school-address').text(previous_school_address);
+                                                modal.find('#modal-student-transfer-date').text(transfer_date);
+                                            } else {
+                                                modal.find('#modal-student-previous-school-name').text('N/A');
+                                                modal.find('#modal-student-previous-school-address').text('N/A');
+                                                modal.find('#modal-student-transfer-date').text('N/A');
+                                            }
                                         });
                                     });
                                 </script>

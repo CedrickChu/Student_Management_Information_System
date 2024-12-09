@@ -90,7 +90,38 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                {% if student.transfer_info %}
+                <hr style="height:1px; color:black; background-color: black;">
+                <div style="width: 60%; margin:auto;">
+                    <h5 class="text-center">Student's Transfer Information</h5>
+                    <hr style="height:2px; color:black; background-color: black;">
+                    <div class="row">
+                        <div class="col-md-5 text-right">
+                            <strong>Previous School Name: </strong>
+                        </div>
+                        <div class="col text-left">
+                            <span id="modal-student-previous-school-name">{{ student.transfer_info.previous_school_name }}</span>
+                        </div>
+                    </div>
+                        <div class="row">
+                            <div class="col-md-5 text-right">
+                                <strong>Previous School Address: </strong>
+                            </div>
+                            <div class="col text-left">
+                                <span id="modal-student-previous-school-address">{{ student.transfer_info.previous_school_address }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5 text-right">
+                                <strong>Transfer Date: </strong>
+                            </div>
+                            <div class="col text-left">
+                                <span id="modal-student-transfer-date">{{ student.transfer_info.transfer_date }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                </div>
             <br>
             <div class="modal-footer">
                 {% if request.user.is_superuser %}
