@@ -35,6 +35,7 @@ admin.site.register(StudentInfo)
 admin.site.register(SchoolYear)
 admin.site.register(Principal)
 admin.site.register(TransferInfo)
+
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     formfield_overrides = {

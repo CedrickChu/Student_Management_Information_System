@@ -1,41 +1,116 @@
-<div class="modal fade" id="addStudentGradeModal" tabindex="-1" role="dialog" aria-labelledby="addStudentGradeModalLabel">
+<!-- Add Grade Modal -->
+<div class="modal fade" id="AddStudentGradeModal" tabindex="-1" role="dialog" aria-labelledby="AddStudentGradeModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="addStudentGradeModalLabel">Add Student Grade</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="AddStudentGradeModalLabel">Add Grade</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-                <form id="add-student-grade-form" method="POST" action="{% url 'student_academic_record' student.id %}{% if grade_level_id %}?grade_level={{ grade_level_id }}{% endif %}">
+                <form id="add-grade-form">
                     {% csrf_token %}
-                    <input type="hidden" name="grade_level" value="{{ default_student_info.grade_level.id }}">
                     <div class="form-group">
                         <label for="subject">Subject</label>
-                        <select name="subject" class="form-control" style="height:40px;" required>
+                        <select id="modal-subject" class="form-control" disabled>
+                            <option value="">Select Subject</option>
                             {% for subject in subjects %}
-                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                <option value="{{ subject.id }}">{{ subject.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    <input type="hidden" id="student-id" value="{{ student_info.id }}">
                     <div class="form-group">
-                        <label for="first_grading">First Grading</label>
-                        <input type="number" name="first_grading" class="form-control" required>
+                        <label for="edit-first-grading">First Grading</label>
+                        <input type="number" class="form-control" id="edit-first-grading" required>
                     </div>
                     <div class="form-group">
-                        <label for="second_grading">Second Grading</label>
-                        <input type="number" name="second_grading" class="form-control" required>
+                        <label for="edit-second-grading">Second Grading</label>
+                        <input type="number" class="form-control" id="edit-second-grading" required>
                     </div>
                     <div class="form-group">
-                        <label for="third_grading">Third Grading</label>
-                        <input type="number" name="third_grading" class="form-control" required>
+                        <label for="edit-third-grading">Third Grading</label>
+                        <input type="number" class="form-control" id="edit-third-grading" required>
                     </div>
                     <div class="form-group">
-                        <label for="fourth_grading">Fourth Grading</label>
-                        <input type="number" name="fourth_grading" class="form-control" required>
+                        <label for="edit-fourth-grading">Fourth Grading</label>
+                        <input type="number" class="form-control" id="edit-fourth-grading" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Add Grade</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" id="save-grade" class="btn btn-primary">Save Grade</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // When the "Add Grade" modal is opened
+    $('#AddStudentGradeModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var studentId = button.data('student-id'); // Get student ID from the button
+        var subjectId = button.data('subject-id'); // Get subject ID from the button
+        var modal = $(this);
+
+        // Set the student and subject IDs as data attributes on the modal
+        modal.data('student-id', studentId);
+        modal.data('subject-id', subjectId);
+
+        // Automatically select the subject in the modal
+        $('#modal-subject').val(subjectId); // Set the selected subject based on the subjectId
+        
+        $('#edit-first-grading').val('');
+        $('#edit-second-grading').val('');
+        $('#edit-third-grading').val('');
+        $('#edit-fourth-grading').val('');
+    });
+
+    // When the save button is clicked
+    $(document).on('click', '#save-grade', function () {
+        let url = '/add-grade/'; // Ensure this endpoint is defined in your Django URLs
+
+        // Validate required fields (basic validation)
+        if ($('#modal-subject').val() === '' || 
+            $('#edit-first-grading').val() === '' || 
+            $('#edit-second-grading').val() === '' || 
+            $('#edit-third-grading').val() === '' || 
+            $('#edit-fourth-grading').val() === '') {
+            alert('Please fill all fields.');
+            return; // Prevent submission if any required field is missing
+        }
+
+        // Log the data being sent for debugging purposes
+        console.log('Student ID:', $('#student-id').val());
+        console.log('Subject ID:', $('#AddStudentGradeModal').data('subject-id'));
+        console.log('First Grading:', $('#edit-first-grading').val());
+        console.log('Second Grading:', $('#edit-second-grading').val());
+        console.log('Third Grading:', $('#edit-third-grading').val());
+        console.log('Fourth Grading:', $('#edit-fourth-grading').val());
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: {
+                student_id: $('#student-id').val(), 
+                subject_id: $('#modal-subject').val(),
+                first_grading: $('#edit-first-grading').val(),
+                second_grading: $('#edit-second-grading').val(),
+                third_grading: $('#edit-third-grading').val(),
+                fourth_grading: $('#edit-fourth-grading').val(),
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            
+        });
+    });
+</script>

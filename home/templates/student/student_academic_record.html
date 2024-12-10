@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}AdminLTE 3 | Dashboard{% endblock title %}
+{% load admin_adminlte %}
 
 {% block extrastyle %}
 <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
@@ -18,7 +19,7 @@
 <div class="content-wrapper">
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1 class="m-0">Student Grade</h1>
+            <h1 style='margin-left:20px;'>Student Grade</h1>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
@@ -29,28 +30,14 @@
                 {% endif %}
             </ol>
         </div>
-    </div>
+    </div> 
     <div class="col-md-12" id="s_page">
         <div class="card">
             <div class="card-header">
-                <i><h2>{{ student.first_name }} {{ student.last_name }}</h2></i> 
-                <i><h4>{{ default_student_info.grade_level }} </h4></i>
+                <i><h2>{{ student_info.student.first_name }} {{ student_info.student.last_name }}</h2></i> 
+                <i><h4>{{ student_info.grade_level }} </h4></i>
             </div>
             <div class="card-body">
-                <form id="filter-form" method="GET" action="#">
-                    <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
-                        <select name="grade_level" class="form-control" style="height:40px;">
-                            <option value="">Select Grade Level</option>
-                            {% for info in student_infos %}
-                                <option value="{{ info.grade_level.id }}" {% if info.grade_level.id == default_student_info.grade_level.id %} selected {% endif %}>{{ info.grade_level.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div style="float: right; margin-right: 10px; margin-top: -10px;">
-                        <button style="height: 40px;" type="submit" class="btn btn-primary">Filter</button>
-                    </div>
-                </form>
                 <div class="panel-body">
                     <table id="records" class="table table-hover table-bordered">
                         <thead>
@@ -67,18 +54,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for grade in student_grades %}
+                            {% for subject in subjects %}
+                            {% with grade=grade_dict|get_item:subject.id %}
                             <tr>
-                                <td>{{ grade.subject.name }}</td>
-                                <td>{{ grade.first_grading }}</td>
-                                <td>{{ grade.second_grading }}</td>
-                                <td>{{ grade.third_grading }}</td>
-                                <td>{{ grade.fourth_grading }}</td>
-                                <td>{{ grade.final_grade }}</td>
+                                <td>{{ subject.name }}</td>
+                                <td>{{ grade.first_grading|default:"N/A" }}</td>
+                                <td>{{ grade.second_grading|default:"N/A" }}</td>
+                                <td>{{ grade.third_grading|default:"N/A" }}</td>
+                                <td>{{ grade.fourth_grading|default:"N/A" }}</td>
+                                <td>{{ grade.final_grade|default:"N/A"}}</td>
+                            {% endwith %}
                                 {% if request.user.is_superuser %}
                                 <td>
-                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editStudentGradeModal" data-id="{{ grade.id }}" data-subject="{{ grade.subject.id }}" data-first_grading="{{ grade.first_grading }}" data-second_grading="{{ grade.second_grading }}" data-third_grading="{{ grade.third_grading }}" data-fourth_grading="{{ grade.fourth_grading }}">
-                                        Edit
+                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#AddStudentGradeModal" 
+                                            data-student-id="{{ student.id }}" 
+                                            data-subject-id="{{ subject.id }}">
+                                        Add Grade
                                     </button>
                                     <button class="btn btn-danger btn-sm delete-grade-btn" data-id="{{ grade.id }}">
                                         Delete
@@ -98,6 +89,33 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).on('click', '.delete-grade-btn', function () {
+        var gradeId = $(this).data('id');
+
+        if (confirm("Are you sure you want to delete this grade?")) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete-grade/' + gradeId + '/',  
+                data: {
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);  
+                        location.reload(); 
+                    } else {
+                        alert('Error deleting grade');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred while deleting the grade.');
+                }
+            });
+        }
+    });
+</script>
 
 {% include 'student/edit_student_grade_modal.html' %}
 

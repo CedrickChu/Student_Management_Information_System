@@ -13,8 +13,10 @@
                     <div class="form-group">
                         <label for="student">Select Student:</label>
                         <select class="form-control mr-2 js-selectize-student3" id="student" name="student_id">
-                            {% for student_info in student_infos %}
-                                <option value="{{ student_info.student.id }}">{{ student_info.student.lrn}} - {{ student_info.student.first_name }} {{ student_info.student.last_name }}</option>
+                            {% for student_info in allStudentInfos %}
+                                <option value="{{ student_info.id }}">
+                                    {{ student_info.student.lrn }} - {{ student_info.student.first_name }} {{ student_info.student.last_name }} ({{ student_info.school_year.year }})
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
@@ -44,7 +46,22 @@
 
             var studentInfoId = $('#student').val();
 
-            window.location.href = '/student-academic/' + studentInfoId + '/';
+            window.location.href = '/student/' + studentInfoId + '/' + 'subjects/';
         });
+        function fetchGrade(gradeId) {
+            fetch(`/grade/${gradeId}/fetch/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'), 
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Process the fetched grade data
+            })
+            .catch(error => console.error('Error fetching grade:', error));
+        }
     });
 </script>

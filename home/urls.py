@@ -47,10 +47,10 @@ urlpatterns = [
     path('user/add/', views.user_add, name='user-add'),
     path('user/update/<int:pk>/', views.user_update, name='user-update'),
     path('invalid/', views.custom_page, name='custom_page'),
-    path('student-academic/<int:student_id>/', views.student_academic_record, name='student_academic_record'),
-    path('fetch_student_grade/<int:grade_id>/', views.fetch_student_grade, name='fetch_student_grade'),
+    # path('student-academic/<int:student_id>/', views.student_academic_record, name='student_academic_record'),
+    path('grade/<int:grade_id>/fetch/', views.fetch_student_grade, name='fetch_student_grade'),
     path('update_student_grade/<int:grade_id>/', views.update_student_grade, name='update_student_grade'),
-    path('delete_student_grade/<int:grade_id>/', views.delete_student_grade, name='delete_student_grade'),
+    path('delete-grade/<int:grade_id>/', views.delete_student_grade, name='delete-grade'),
     path('newstudent/', views.student_new, name='student-new'),
     path('student/old/', views.student_old, name='student-old'),
     path('student/transferee/', views.student_transfer, name='student-transfer'),
@@ -58,6 +58,11 @@ urlpatterns = [
     path('add_event/', views.add_event, name='add_event'), 
     path('update/', views.update_event, name='update'),
     path('remove/', views.delete_event, name='remove'),
+    path('student/<int:student_info_id>/subjects/', views.student_academic_record, name='student_academic_record'),
+    path('edit-grade/<int:grade_id>/', views.edit_student_grade, name='edit-student-grade'),
+    path('add-grade/', views.add_student_grade, name='add-grade'),
+
+
     # Examples
     path('examples/calendar/', views.examples_calendar, name='examples_calendar'),
     path('examples/gallery/', views.examples_gallery, name='examples_gallery'),

@@ -31,6 +31,7 @@ from datetime import timedelta
 from django.core.paginator import Paginator
 import json
 from django.contrib.contenttypes.models import ContentType
+import logging
 
 def test(request):
     return render(request, 'test.html')
@@ -201,7 +202,6 @@ def allStudent_list(request):
     parent_guardians = ParentGuardian.objects.all()
     grade_level_filter = request.GET.get('grade_level')
     school_level_filter = request.GET.get('school_year')
-
     current_school_year = SchoolYear.objects.filter(status=True).first()
 
     if school_level_filter != 'all' and not school_level_filter and current_school_year:
@@ -221,7 +221,7 @@ def allStudent_list(request):
     grade_levels = GradeLevel.objects.all()
     school_years = SchoolYear.objects.all()
     students = [info.student for info in student_infos]
-    allStudents = Student.objects.all()
+    allStudentInfos = StudentInfo.objects.all()
     sections = Section.objects.all()
 
     # Handle student year info form
@@ -240,7 +240,7 @@ def allStudent_list(request):
         'grade_levels': grade_levels,
         'students': students,
         'school_years': school_years,
-        'allStudents': allStudents,
+        'allStudentInfos': allStudentInfos,
         'sections': sections,
         'parent_guardians': parent_guardians,
         'page_obj': page_obj,
@@ -1027,83 +1027,52 @@ def delete_teacher(request):
     return JsonResponse(0, safe=False)
 
 @login_required
-def student_academic_record(request, student_id):
-    student = get_object_or_404(Student, id=student_id)
-    student_infos = StudentInfo.objects.filter(student=student)
-    subjects = Subject.objects.all()
-    default_student_info = student_infos.first()
-    if not default_student_info:
-        default_student_info = None
+def student_academic_record(request, student_info_id):
+    """
+    Display all subjects and grades for a student based on their grade level.
+    """
+    # Retrieve the student's information
+    
+    student_info = get_object_or_404(StudentInfo, id=student_info_id)
 
-    student_grades = StudentGrade.objects.filter(student=default_student_info) if default_student_info else None
-    grade_levels = set(info.grade_level for info in student_infos)
+    # Get the grade level of the student
+    grade_level = student_info.grade_level
 
-    grade_level_id = None
+    # Fetch subjects related to the grade level
+    subjects = Subject.objects.filter(grade_level=grade_level)
 
-    # Handle filtering by grade level if form is submitted
-    if 'grade_level' in request.GET:
-        grade_level_id = request.GET.get('grade_level')
-        if grade_level_id:
-            student_info = StudentInfo.objects.filter(student=student, grade_level=grade_level_id).first()
-            if student_info:
-                student_grades = StudentGrade.objects.filter(student=student_info)
-                default_student_info = student_info
+    # Fetch grades for the student
+    grades = StudentGrade.objects.filter(student=student_info)
+    grade_dict = {grade.subject_id: grade for grade in grades}
 
-    # Get subjects that already have grades for this student and grade level
-    if default_student_info:
-        graded_subject_ids = StudentGrade.objects.filter(student=default_student_info).values_list('subject_id', flat=True)
-        subjects = subjects.exclude(id__in=graded_subject_ids)
-        # Filter subjects by the student's grade level
-        subjects = subjects.filter(grade_level=default_student_info.grade_level)
-
-    # Handle form submission to add StudentGrade
-    if request.method == 'POST':
-        form = StudentGradeForm(request.POST)
-        if form.is_valid():
-            grade_level_id = request.POST.get('grade_level')
-            if grade_level_id:
-                default_student_info = StudentInfo.objects.filter(student=student, grade_level=grade_level_id).first()
-
-            student_grade = form.save(commit=False)
-            student_grade.student = default_student_info
-            student_grade.save()
-
-            url = reverse('student_academic_record', args=[student_id])
-            if grade_level_id:
-                url += f'?grade_level={grade_level_id}#{grade_level_id}'
-            return redirect(url)
-    else:
-        form = StudentGradeForm()
-
+    # Context to pass to the template
     context = {
-        'student': student,
-        'student_infos': student_infos,
-        'default_student_info': default_student_info,
-        'student_grades': student_grades,
-        'grade_levels': grade_levels,
+        'student_info': student_info,
         'subjects': subjects,
-        'form': form,
-        'grade_level_id': grade_level_id,
-        'parent': 'reports',
-        'segment': 'student_academic_record',
+        'grade_dict': grade_dict,
     }
 
     return render(request, 'student/student_academic_record.html', context)
 
 
 @require_POST
+@login_required
 def fetch_student_grade(request, grade_id):
+    """
+    Fetch student grades and return them as JSON.
+    """
     grade = get_object_or_404(StudentGrade, id=grade_id)
     data = {
         'id': grade.id,
-        'first_grading': grade.first_grading,
-        'second_grading': grade.second_grading,
-        'third_grading': grade.third_grading,
-        'fourth_grading': grade.fourth_grading,
+        'first_grading': grade.first_grading if grade.first_grading is not None else 'N/A',
+        'second_grading': grade.second_grading if grade.second_grading is not None else 'N/A',
+        'third_grading': grade.third_grading if grade.third_grading is not None else 'N/A',
+        'fourth_grading': grade.fourth_grading if grade.fourth_grading is not None else 'N/A',
     }
     return JsonResponse(data)
 
 @require_POST
+@login_required
 def update_student_grade(request, grade_id):
     grade = get_object_or_404(StudentGrade, id=grade_id)
     grade.first_grading = request.POST.get('first_grading')
@@ -1114,7 +1083,79 @@ def update_student_grade(request, grade_id):
     grade.save()
     return JsonResponse({'success': True, 'message': 'Grade updated successfully.'})
 
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+@login_required
+def edit_student_grade(request, grade_id):
+    if request.method == "POST":
+        try:
+            grade = get_object_or_404(StudentGrade, id=grade_id)
+            logger.debug(f"Editing grade with ID: {grade_id}")
+            
+            grade.first_grading = request.POST.get("first_grading") or None
+            grade.second_grading = request.POST.get("second_grading") or None
+            grade.third_grading = request.POST.get("third_grading") or None
+            grade.fourth_grading = request.POST.get("fourth_grading") or None
+            grade.save()
+            
+            logger.debug("Grade updated successfully.")
+            return JsonResponse({"success": True, "message": "Grade updated successfully!"})
+        except Exception as e:
+            logger.error(f"Error updating grade: {str(e)}")
+            return JsonResponse({"success": False, "message": str(e)})
+    else:
+        logger.warning("Invalid request method.")
+        return JsonResponse({"success": False, "message": "Invalid request method."})
+
+
+@csrf_exempt
+@login_required
+def add_student_grade(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        subject_id = request.POST.get('subject_id')
+        first_grading = request.POST.get('first_grading')
+        second_grading = request.POST.get('second_grading')
+        third_grading = request.POST.get('third_grading')
+        fourth_grading = request.POST.get('fourth_grading')
+
+        student = StudentInfo.objects.get(id=student_id)
+        subject = Subject.objects.get(id=subject_id)
+       
+        try:
+            first_grading = float(first_grading)
+            second_grading = float(second_grading)
+            third_grading = float(third_grading)
+            fourth_grading = float(fourth_grading)
+        except ValueError:
+            return JsonResponse({'success': False, 'message': 'Invalid grade format.'})
+
+        # Add or update the grade record
+        grade, created = StudentGrade.objects.get_or_create(
+            student=student,
+            subject=subject,
+            defaults={
+                'first_grading': first_grading,
+                'second_grading': second_grading,
+                'third_grading': third_grading,
+                'fourth_grading': fourth_grading
+            }
+        )
+
+        if not created:
+            grade.first_grading = first_grading
+            grade.second_grading = second_grading
+            grade.third_grading = third_grading
+            grade.fourth_grading = fourth_grading
+            grade.save()
+
+        return JsonResponse({'success': True, 'message': 'Grade saved successfully.'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request.'})
+
 @require_POST
+@login_required
 def delete_student_grade(request, grade_id):
     grade = get_object_or_404(StudentGrade, id=grade_id)
     log_admin_action(request, grade, DELETION, "Grade Deleted through custom page.")
@@ -1241,6 +1282,32 @@ def student_transfer(request):
         'student_transfer_form': student_transfer_form,
     })
 
+
+def student_subjects(request, student_info_id):
+    """
+    Display all subjects and grades for a student based on their grade level.
+    """
+    # Retrieve the student's information
+    student_info = get_object_or_404(StudentInfo, id=student_info_id)
+
+    # Get the grade level of the student
+    grade_level = student_info.grade_level
+
+    # Fetch subjects related to the grade level
+    subjects = Subject.objects.filter(grade_level=grade_level)
+
+    # Fetch grades for the student
+    grades = StudentGrade.objects.filter(student=student_info)
+    grade_dict = {grade.subject_id: grade for grade in grades}
+
+    # Context to pass to the template
+    context = {
+        'student_info': student_info,
+        'subjects': subjects,
+        'grade_dict': grade_dict,
+    }
+
+    return render(request, 'student_subjects.html', context)
 
 def widgets(request):
   context = {

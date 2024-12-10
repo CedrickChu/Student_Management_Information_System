@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Subjects and Grades</title>
+    
+</head>
+{% load admin_adminlte %}
+
+<body>
+    <h1>Subjects and Grades for {{ student_info.student }}</h1>
+    <h2>Grade Level: {{ student_info.grade_level }}</h2>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>First Grading</th>
+                <th>Second Grading</th>
+                <th>Third Grading</th>
+                <th>Fourth Grading</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+                {% with grade=grade_dict|get_item:subject.id %}
+                <tr>
+                    <td>{{ subject.name }}</td>
+                    <td>{{ grade.first_grading|default:"N/A" }}</td>
+                    <td>{{ grade.second_grading|default:"N/A" }}</td>
+                    <td>{{ grade.third_grading|default:"N/A" }}</td>
+                    <td>{{ grade.fourth_grading|default:"N/A" }}</td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+<script>
+    function fetchGrade(gradeId) {
+        fetch(`/grade/${gradeId}/fetch/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // Process the fetched grade data
+        })
+        .catch(error => console.error('Error fetching grade:', error));
+    }
+</script>
+</html>

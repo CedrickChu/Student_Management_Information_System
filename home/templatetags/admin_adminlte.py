@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from home.utils import get_menu_items
 from django.utils.safestring import mark_safe
 from django.contrib.admin.views.main import (PAGE_VAR)
+from home.models import StudentGrade
 
 register = template.Library()
 assignment_tag = register.assignment_tag if hasattr(register, 'assignment_tag') else register.simple_tag
@@ -19,6 +20,26 @@ def clean_text(value):
 def checkbox(value):
     res = re.sub(r"</?(?i:td)(.|\n)*?>", "", value)
     return res
+
+@register.filter
+def get_item(dictionary, key):
+    """Retrieve a value from a dictionary using the key."""
+    return dictionary.get(key)
+
+@register.filter
+def get_grade(student_grades, grading_period):
+    """
+    Returns the grade for a specific grading period of a student.
+    If no grade is found, it returns 'Unposted'.
+    """
+    if not student_grades:
+        return 'Unposted'
+
+    # Get the grade for the specific grading period dynamically
+    grade = student_grades.first()  # Assuming 'student_grades' is a queryset with one grade entry for a student
+    if grade:
+        return getattr(grade, grading_period, 'Unposted')  # Access the grade dynamically
+    return 'Unposted'
 
 
 @assignment_tag(takes_context=True)

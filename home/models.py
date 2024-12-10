@@ -147,7 +147,6 @@ class StudentInfo(models.Model):
         ('old', 'Old'),
         ('transferee', 'Transferee'),
     ]
-
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     school_year = models.ForeignKey(SchoolYear, on_delete=models.SET_NULL, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
