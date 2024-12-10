@@ -200,55 +200,66 @@ def index3(request):
 def allStudent_list(request):
     student_infos = StudentInfo.objects.all()
     parent_guardians = ParentGuardian.objects.all()
+    all_student_infos = StudentInfo.objects.all()
     grade_level_filter = request.GET.get('grade_level')
     school_level_filter = request.GET.get('school_year')
+    status_filter = request.GET.get('status')  # Added filter for status (new, old, transferee)
     current_school_year = SchoolYear.objects.filter(status=True).first()
 
-    if school_level_filter != 'all' and not school_level_filter and current_school_year:
-        student_infos = student_infos.filter(school_year=current_school_year)
-
-    if school_level_filter:
+    # Filter based on the current school year if 'school_year' is not set to 'all'
+    if school_level_filter and school_level_filter != 'all':
         student_infos = student_infos.filter(school_year_id=school_level_filter)
+    elif not school_level_filter and current_school_year:
+        student_infos = student_infos.filter(school_year=current_school_year)
 
     # Apply the grade level filter if specified
     if grade_level_filter:
         student_infos = student_infos.filter(grade_level_id=grade_level_filter)
 
+    # Apply the status filter if specified
+    if status_filter and status_filter != 'all':  # Assuming 'all' is a valid option to show all statuses
+        student_infos = student_infos.filter(status=status_filter)
 
     paginator = Paginator(student_infos, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
     grade_levels = GradeLevel.objects.all()
     school_years = SchoolYear.objects.all()
-    students = [info.student for info in student_infos]
-    allStudentInfos = StudentInfo.objects.all()
     sections = Section.objects.all()
 
     # Handle student year info form
+    student_year_info_form = StudentInfoForm()
+
     if request.method == 'POST':
         student_id = request.POST.get('student_id')
         student = get_object_or_404(Student, pk=student_id)
         student_year_info_form = StudentInfoForm(request.POST, student=student)
+
         if student_year_info_form.is_valid():
             student_year_info_form.save()
             return redirect('success_page')
-    else:
-        student_year_info_form = StudentInfoForm()
 
+    # Prepare context
     context = {
         'student_infos': page_obj,
         'grade_levels': grade_levels,
-        'students': students,
         'school_years': school_years,
-        'allStudentInfos': allStudentInfos,
         'sections': sections,
         'parent_guardians': parent_guardians,
         'page_obj': page_obj,
+        'all_student_infos': all_student_infos,
         'is_paginated': page_obj.has_other_pages(),
         'student_year_info_form': student_year_info_form,
         'parent': 'masterlist',
-        'segment': 'allStudent-list'
+        'segment': 'allStudent-list',
+        'current_school_year': current_school_year,
+        'status_choices': dict(StudentInfo.STATUS_CHOICES),  # Add status choices to context
+        'grade_level_filter': grade_level_filter,
+        'school_level_filter': school_level_filter,
+        'status_filter': status_filter,  # Pass filters to template
     }
+
     return render(request, 'student/all_student_list.html', context)
 
 
@@ -1032,7 +1043,6 @@ def student_academic_record(request, student_info_id):
     Display all subjects and grades for a student based on their grade level.
     """
     # Retrieve the student's information
-    
     student_info = get_object_or_404(StudentInfo, id=student_info_id)
 
     # Get the grade level of the student
@@ -1043,17 +1053,16 @@ def student_academic_record(request, student_info_id):
 
     # Fetch grades for the student
     grades = StudentGrade.objects.filter(student=student_info)
-    grade_dict = {grade.subject_id: grade for grade in grades}
+    grade_dict = {grade.subject.id: grade for grade in grades} 
 
     # Context to pass to the template
     context = {
         'student_info': student_info,
         'subjects': subjects,
-        'grade_dict': grade_dict,
+        'grade_dict': grade_dict,  # Pass the grade_dict
     }
 
     return render(request, 'student/student_academic_record.html', context)
-
 
 @require_POST
 @login_required
@@ -1075,15 +1084,20 @@ def fetch_student_grade(request, grade_id):
 @login_required
 def update_student_grade(request, grade_id):
     grade = get_object_or_404(StudentGrade, id=grade_id)
-    grade.first_grading = request.POST.get('first_grading')
-    grade.second_grading = request.POST.get('second_grading')
-    grade.third_grading = request.POST.get('third_grading')
-    grade.fourth_grading = request.POST.get('fourth_grading')
+
+    # Try to get the grade values from the POST data, defaulting to None if they are empty
+    try:
+        grade.first_grading = float(request.POST.get('first_grading') or 0) if request.POST.get('first_grading') else None
+        grade.second_grading = float(request.POST.get('second_grading') or 0) if request.POST.get('second_grading') else None
+        grade.third_grading = float(request.POST.get('third_grading') or 0) if request.POST.get('third_grading') else None
+        grade.fourth_grading = float(request.POST.get('fourth_grading') or 0) if request.POST.get('fourth_grading') else None
+    except ValueError:
+        return JsonResponse({'success': False, 'message': 'Invalid grade values provided.'})
+
     log_admin_action(request, grade, CHANGE, "Grade Updated through custom page.")
     grade.save()
-    return JsonResponse({'success': True, 'message': 'Grade updated successfully.'})
 
-logger = logging.getLogger(__name__)
+    return JsonResponse({'success': True, 'message': 'Grade updated successfully.'})
 
 @csrf_exempt
 @login_required
@@ -1091,7 +1105,6 @@ def edit_student_grade(request, grade_id):
     if request.method == "POST":
         try:
             grade = get_object_or_404(StudentGrade, id=grade_id)
-            logger.debug(f"Editing grade with ID: {grade_id}")
             
             grade.first_grading = request.POST.get("first_grading") or None
             grade.second_grading = request.POST.get("second_grading") or None
@@ -1099,13 +1112,10 @@ def edit_student_grade(request, grade_id):
             grade.fourth_grading = request.POST.get("fourth_grading") or None
             grade.save()
             
-            logger.debug("Grade updated successfully.")
             return JsonResponse({"success": True, "message": "Grade updated successfully!"})
         except Exception as e:
-            logger.error(f"Error updating grade: {str(e)}")
             return JsonResponse({"success": False, "message": str(e)})
     else:
-        logger.warning("Invalid request method.")
         return JsonResponse({"success": False, "message": "Invalid request method."})
 
 
@@ -1122,12 +1132,12 @@ def add_student_grade(request):
 
         student = StudentInfo.objects.get(id=student_id)
         subject = Subject.objects.get(id=subject_id)
-       
+
         try:
-            first_grading = float(first_grading)
-            second_grading = float(second_grading)
-            third_grading = float(third_grading)
-            fourth_grading = float(fourth_grading)
+            first_grading = float(first_grading) if first_grading else None
+            second_grading = float(second_grading) if second_grading else None
+            third_grading = float(third_grading) if third_grading else None
+            fourth_grading = float(fourth_grading) if fourth_grading else None
         except ValueError:
             return JsonResponse({'success': False, 'message': 'Invalid grade format.'})
 
@@ -1154,6 +1164,29 @@ def add_student_grade(request):
 
     return JsonResponse({'success': False, 'message': 'Invalid request.'})
 
+@login_required
+def get_current_grade(request):
+    student_id = request.GET.get('student_id')
+    subject_id = request.GET.get('subject_id')
+
+    try:
+        student_grade = StudentGrade.objects.get(student_id=student_id, subject_id=subject_id)
+        return JsonResponse({
+            'success': True,
+            'first_grading': student_grade.first_grading,
+            'second_grading': student_grade.second_grading,
+            'third_grading': student_grade.third_grading,
+            'fourth_grading': student_grade.fourth_grading,
+        })
+    except StudentGrade.DoesNotExist:
+        return JsonResponse({
+            'success': True,  # No grade yet, so no errors
+            'first_grading': None,
+            'second_grading': None,
+            'third_grading': None,
+            'fourth_grading': None,
+        })
+        
 @require_POST
 @login_required
 def delete_student_grade(request, grade_id):

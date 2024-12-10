@@ -23,19 +23,19 @@
                     <input type="hidden" id="student-id" value="{{ student_info.id }}">
                     <div class="form-group">
                         <label for="edit-first-grading">First Grading</label>
-                        <input type="number" class="form-control" id="edit-first-grading" required>
+                        <input type="number" class="form-control" id="edit-first-grading">
                     </div>
                     <div class="form-group">
                         <label for="edit-second-grading">Second Grading</label>
-                        <input type="number" class="form-control" id="edit-second-grading" required>
+                        <input type="number" class="form-control" id="edit-second-grading">
                     </div>
                     <div class="form-group">
                         <label for="edit-third-grading">Third Grading</label>
-                        <input type="number" class="form-control" id="edit-third-grading" required>
+                        <input type="number" class="form-control" id="edit-third-grading">
                     </div>
                     <div class="form-group">
                         <label for="edit-fourth-grading">Fourth Grading</label>
-                        <input type="number" class="form-control" id="edit-fourth-grading" required>
+                        <input type="number" class="form-control" id="edit-fourth-grading">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -62,26 +62,22 @@
         // Automatically select the subject in the modal
         $('#modal-subject').val(subjectId); // Set the selected subject based on the subjectId
         
+        // Clear grading fields
         $('#edit-first-grading').val('');
         $('#edit-second-grading').val('');
         $('#edit-third-grading').val('');
         $('#edit-fourth-grading').val('');
     });
 
-    // When the save button is clicked
     $(document).on('click', '#save-grade', function () {
         let url = '/add-grade/'; // Ensure this endpoint is defined in your Django URLs
-
-        // Validate required fields (basic validation)
-        if ($('#modal-subject').val() === '' || 
-            $('#edit-first-grading').val() === '' || 
-            $('#edit-second-grading').val() === '' || 
-            $('#edit-third-grading').val() === '' || 
-            $('#edit-fourth-grading').val() === '') {
-            alert('Please fill all fields.');
-            return; // Prevent submission if any required field is missing
+    
+        // Validate required fields (only validate subject selection, not grades)
+        if ($('#modal-subject').val() === '') {
+            alert('Please select a subject.');
+            return; // Prevent submission if subject is not selected
         }
-
+    
         // Log the data being sent for debugging purposes
         console.log('Student ID:', $('#student-id').val());
         console.log('Subject ID:', $('#AddStudentGradeModal').data('subject-id'));
@@ -89,17 +85,17 @@
         console.log('Second Grading:', $('#edit-second-grading').val());
         console.log('Third Grading:', $('#edit-third-grading').val());
         console.log('Fourth Grading:', $('#edit-fourth-grading').val());
-
+    
         $.ajax({
             type: 'POST',
             url: url,
             data: {
-                student_id: $('#student-id').val(), 
+                student_id: $('#student-id').val(),
                 subject_id: $('#modal-subject').val(),
-                first_grading: $('#edit-first-grading').val(),
-                second_grading: $('#edit-second-grading').val(),
-                third_grading: $('#edit-third-grading').val(),
-                fourth_grading: $('#edit-fourth-grading').val(),
+                first_grading: $('#edit-first-grading').val() ? $('#edit-first-grading').val() : null,  // Handle empty fields as null
+                second_grading: $('#edit-second-grading').val() ? $('#edit-second-grading').val() : null, // Handle empty fields as null
+                third_grading: $('#edit-third-grading').val() ? $('#edit-third-grading').val() : null,   // Handle empty fields as null
+                fourth_grading: $('#edit-fourth-grading').val() ? $('#edit-fourth-grading').val() : null, // Handle empty fields as null
                 csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             },
             success: function (response) {
@@ -110,7 +106,9 @@
                     alert(response.message);
                 }
             },
-            
+            error: function (xhr, status, error) {
+                alert('An error occurred: ' + error);
+            }
         });
     });
 </script>

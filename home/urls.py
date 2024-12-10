@@ -61,6 +61,8 @@ urlpatterns = [
     path('student/<int:student_info_id>/subjects/', views.student_academic_record, name='student_academic_record'),
     path('edit-grade/<int:grade_id>/', views.edit_student_grade, name='edit-student-grade'),
     path('add-grade/', views.add_student_grade, name='add-grade'),
+    path('get-current-grade/', views.get_current_grade, name='get-current-grade'),
+
 
 
     # Examples

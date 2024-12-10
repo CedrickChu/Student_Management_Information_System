@@ -13,7 +13,7 @@
                     <div class="form-group">
                         <label for="student">Select Student:</label>
                         <select class="form-control mr-2 js-selectize-student3" id="student" name="student_id">
-                            {% for student_info in allStudentInfos %}
+                            {% for student_info in all_student_infos %}
                                 <option value="{{ student_info.id }}">
                                     {{ student_info.student.lrn }} - {{ student_info.student.first_name }} {{ student_info.student.last_name }} ({{ student_info.school_year.year }})
                                 </option>

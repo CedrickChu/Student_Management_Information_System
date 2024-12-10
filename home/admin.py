@@ -26,12 +26,10 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.unregister(Group)
 admin.site.register(Event)
-
 admin.site.register(GradeLevel)
 admin.site.register(Subject)
 admin.site.register(Section)
 admin.site.register(ParentGuardian)
-admin.site.register(StudentInfo)
 admin.site.register(SchoolYear)
 admin.site.register(Principal)
 admin.site.register(TransferInfo)
@@ -49,7 +47,18 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': ('lrn','first_name','middle_name', 'last_name', 'birth_date', 'place_of_birth', 'gender','address','parent_guardians',)
         }),
     )
-
+    
+@admin.register(StudentInfo)
+class StudentInfoAdmin(admin.ModelAdmin):
+    # List view configuration
+    list_display = ('student', 'school_year', 'section', 'grade_level', 'status', 'paid_first_quarter', 'paid_second_quarter', 'paid_third_quarter', 'paid_fourth_quarter')
+    
+    # Search configuration
+    search_fields = ('student__first_name', 'student__last_name', 'school_year__year', 'section__name', 'grade_level__level')
+    
+    # Filter configuration
+    list_filter = ('status', 'school_year', 'section', 'grade_level')
+    
 @admin.register(StudentGrade)
 class StudentGradeAdmin(admin.ModelAdmin):
     list_display = ('student', 'subject', 'first_grading', 'second_grading', 'third_grading', 'fourth_grading')

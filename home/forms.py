@@ -170,19 +170,13 @@ class StudentInfoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(StudentInfoForm, self).__init__(*args, **kwargs)
-        self.fields['student'].required = False
+        self.fields['student'].required = False 
+        self.fields['section'].required = False  
 
     def clean_student(self):
         student = self.cleaned_data.get('student', None)
         return student
 
-    def __init__(self, *args, **kwargs):
-        super(StudentInfoForm, self).__init__(*args, **kwargs)
-        self.fields['student'].required = False
-
-    def clean_student(self):
-        student = self.cleaned_data.get('student', None)
-        return student
 
 class TransferInfoForm(forms.ModelForm):
     class Meta:
@@ -213,24 +207,30 @@ class GradeLevelFilterForm(forms.Form):
     grade_level = forms.ModelChoiceField(queryset=GradeLevel.objects.all(), required=True, label='Grade Level')
 
 
-
 class StudentGradeForm(forms.ModelForm):
     class Meta:
         model = StudentGrade
-        fields = ['subject', 'first_grading', 'second_grading', 'third_grading', 'fourth_grading']
+        fields = ['student', 'subject', 'first_grading', 'second_grading', 'third_grading', 'fourth_grading']
 
     def __init__(self, *args, **kwargs):
         student_info = kwargs.pop('student_info', None)
         super().__init__(*args, **kwargs)
         if student_info:
-            self.fields['student_info'].initial = student_info.id
+            # Set the initial student value for the form
+            self.fields['student'].initial = student_info
+
+        # Make all grading fields optional
+        self.fields['first_grading'].required = False
+        self.fields['second_grading'].required = False
+        self.fields['third_grading'].required = False
+        self.fields['fourth_grading'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
-        student_info = cleaned_data.get('student_info')
+        student = cleaned_data.get('student')
         subject = cleaned_data.get('subject')
 
-        if StudentGrade.objects.filter(student=student_info, subject=subject).exists():
+        if StudentGrade.objects.filter(student=student, subject=subject).exists():
             raise forms.ValidationError(f'A grade for {subject.name} already exists for this student.')
 
         return cleaned_data

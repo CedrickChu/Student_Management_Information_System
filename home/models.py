@@ -199,7 +199,7 @@ class Principal(models.Model):
 class StudentGrade(models.Model):
     student = models.ForeignKey(StudentInfo, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    first_grading = models.IntegerField( null=True, blank=True)
+    first_grading = models.IntegerField(null=True, blank=True)
     second_grading = models.IntegerField(null=True, blank=True)
     third_grading = models.IntegerField(null=True, blank=True)
     fourth_grading = models.IntegerField(null=True, blank=True)

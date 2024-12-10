@@ -22,16 +22,12 @@
                 <button style="float:left; margin-right:40px;" type="button" class="btn btn-info" data-toggle="modal" data-target="#syiModal">
                     <i class="glyphicon glyphicon-plus"></i> New Entry
                 </button>
-                <button style="float:left" type="button" class="btn btn-info" data-toggle="modal" data-target="#academicRecordModal">
-                    <i class="glyphicon glyphicon-plus"></i> View Academic Record
-                </button>
                 <span id='returncode'></span>
             </ol>
           </div>
         </div>
       </div><!-- /.container-fluid -->
     </section>
-
     <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
@@ -41,7 +37,7 @@
                 <form id="filter-form" method="GET" action="{% url 'allStudent-list' %}">
                     <div class="input-group no-border" style="float:right; width:20%; margin-right: 10px;">
                         <select name="grade_level" class="form-control" style="height:40px;">
-                            <option value="">Select Grade Level (Default Current)</option>
+                            <option value="">Select Grade Level (Default All)</option>
                             {% for level in grade_levels %}
                                 <option value="{{ level.id }}" {% if request.GET.grade_level == level.id|stringformat:'s' %} selected {% endif %}>{{ level.name }}</option>
                             {% endfor %}
@@ -73,6 +69,7 @@
                             <th rowspan="2">Section</th>
                             <th rowspan="2">School Year</th>
                             <th colspan="4">Payment</th>
+                            <th rowspan="2">Option</th>
                         </tr>
                         <tr>
                             <th>First Quarter</th>
@@ -85,10 +82,14 @@
                         {% for student_info in student_infos %}
                         <tr>
                             <td>{{ student_info.student.lrn }}</td>
-                            <td>{{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }} 
-                                {% if student_info.status != 'old'%}
-                                <span class="badge badge-warning">{{student_info.status}}</span></td>
+                            <td>
+                                {{ student_info.student.first_name }} {{ student_info.student.middle_name }} {{ student_info.student.last_name }} 
+                                {% if student_info.grade_level.id == 1 and student_info.school_year.id == current_school_year.id %}
+                                    <span class="badge badge-warning">New</span>
+                                {% elif student_info.status == 'transferee' %}
+                                    <span class="badge badge-warning">Transferee</span>
                                 {% endif %}
+                            </td>
                             <td>{{ student_info.grade_level }}</td>
                             <td>{{ student_info.section }}</td>
                             <td>{{ student_info.school_year.year }}</td>
@@ -96,6 +97,11 @@
                             <td>{% if student_info.paid_second_quarter %} Paid {% else %} Not Paid {% endif %}</td>
                             <td>{% if student_info.paid_third_quarter %} Paid {% else %} Not Paid {% endif %}</td>
                             <td>{% if student_info.paid_fourth_quarter %} Paid {% else %} Not Paid {% endif %}</td>
+                            <td>
+                                <button class='btn btn-success' onclick="window.location.href='{% url 'student_academic_record' student_info_id=student_info.id %}'">
+                                  View Academic Record
+                                </button>
+                              </td>
                         </tr>
                         {% endfor %}
                     </tbody>
